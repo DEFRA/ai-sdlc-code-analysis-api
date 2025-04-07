@@ -3,7 +3,7 @@ from logging import getLogger
 
 from fastapi import FastAPI
 
-from app.code_analysis.router import router as code_analysis_router
+from app.code_analysis.api.v1.code_analysis import router as code_analysis_router
 from app.common.mongo import get_mongo_client
 from app.common.tracing import TraceIdMiddleware
 from app.example.router import router as example_router

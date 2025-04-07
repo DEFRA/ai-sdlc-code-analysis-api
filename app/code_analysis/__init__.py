@@ -1,3 +1,3 @@
 """
-Code Analysis module for AI SDLC code analysis.
+AI SDLC Code Analysis API
 """

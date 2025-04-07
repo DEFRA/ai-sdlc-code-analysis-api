@@ -4,7 +4,7 @@ Node definitions for code analysis LangGraph.
 
 from logging import getLogger
 
-from src.agents.states.code_analysis import CodeAnalysisState
+from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
 
 logger = getLogger(__name__)
 

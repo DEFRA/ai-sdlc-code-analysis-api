@@ -7,8 +7,11 @@ from logging import getLogger
 
 from bson import ObjectId
 
-from src.agents.code_analysis import create_code_analysis_agent, get_analysis_state
-from src.models.code_analysis import CodeAnalysisState
+from app.code_analysis.agents.code_analysis import (
+    create_code_analysis_agent,
+    get_analysis_state,
+)
+from app.code_analysis.models.code_analysis import CodeAnalysisState
 
 logger = getLogger(__name__)
 

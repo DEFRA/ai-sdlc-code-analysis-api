@@ -6,12 +6,15 @@ from logging import getLogger
 
 from fastapi import APIRouter, HTTPException, status
 
-from src.models.code_analysis import (
+from app.code_analysis.models.code_analysis import (
     CodeAnalysisRequest,
     CodeAnalysisResponse,
     CodeAnalysisState,
 )
-from src.services.code_analysis import get_code_analysis_state, trigger_code_analysis
+from app.code_analysis.services.code_analysis import (
+    get_code_analysis_state,
+    trigger_code_analysis,
+)
 
 router = APIRouter(prefix="/api/v1/code-analysis")
 logger = getLogger(__name__)
