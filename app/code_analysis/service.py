@@ -1,0 +1,48 @@
+import asyncio
+from logging import getLogger
+
+from bson import ObjectId
+
+from app.code_analysis.agent import create_code_analysis_agent, get_analysis_state
+from app.code_analysis.models import CodeAnalysisState
+
+logger = getLogger(__name__)
+
+
+async def trigger_code_analysis(repo_url: str) -> str:
+    """
+    Triggers a new code analysis for the given repository URL.
+
+    Args:
+        repo_url: The URL of the repository to analyze
+
+    Returns:
+        The thread ID for the analysis
+    """
+    # Generate a unique thread ID
+    thread_id = str(ObjectId())
+    logger.info(
+        "Triggering code analysis for repo %s with thread ID %s", repo_url, thread_id
+    )
+
+    # Start the agent asynchronously, don't wait for completion
+    asyncio.create_task(create_code_analysis_agent(thread_id, repo_url))
+
+    return thread_id
+
+
+async def get_code_analysis_state(thread_id: str) -> CodeAnalysisState:
+    """
+    Gets the current state of a code analysis.
+
+    Args:
+        thread_id: The unique identifier for the analysis thread
+
+    Returns:
+        The current state of the analysis
+
+    Raises:
+        ValueError: If the thread ID is not found
+    """
+    logger.info("Getting code analysis state for thread %s", thread_id)
+    return await get_analysis_state(thread_id)

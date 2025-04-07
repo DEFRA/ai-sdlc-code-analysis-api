@@ -3,6 +3,7 @@ from logging import getLogger
 
 from fastapi import FastAPI
 
+from app.code_analysis.router import router as code_analysis_router
 from app.common.mongo import get_mongo_client
 from app.common.tracing import TraceIdMiddleware
 from app.example.router import router as example_router
@@ -31,3 +32,4 @@ app.add_middleware(TraceIdMiddleware)
 # Setup Routes
 app.include_router(health_router)
 app.include_router(example_router)
+app.include_router(code_analysis_router)
