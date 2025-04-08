@@ -12,3 +12,10 @@ langgraph
 langgraph-checkpoint
 langgraph-checkpoint-mongodb
 langchain
+anthropic
+gitpython
+pydantic
+tree-sitter>=0.23.6
+tree-sitter-language-pack>=0.6.1
+tiktoken
+pathspec
