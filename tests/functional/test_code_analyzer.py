@@ -41,7 +41,9 @@ class TestCodeAnalyzer:
     @pytest.fixture
     def analyzer(self, test_config):
         """Create a test analyzer instance."""
-        with patch("app.code_analysis.agents.nodes.code_chunker.analyzer.RepositoryManager") as mock_repo_manager:
+        with patch(
+            "app.code_analysis.agents.nodes.code_chunker.analyzer.RepositoryManager"
+        ) as mock_repo_manager:
             # Configure the mock repo manager
             instance = mock_repo_manager.return_value
             instance.repo_path = os.path.join(tempfile.gettempdir(), "test_repo")
@@ -62,7 +64,9 @@ class TestCodeAnalyzer:
         assert analyzer.parser_manager is not None
         assert analyzer.chunk_manager is not None
 
-    @patch("app.code_analysis.agents.nodes.code_chunker.analyzer.generate_file_structure")
+    @patch(
+        "app.code_analysis.agents.nodes.code_chunker.analyzer.generate_file_structure"
+    )
     @patch("app.code_analysis.agents.nodes.code_chunker.analyzer.detect_languages")
     @pytest.mark.usefixtures("mock_anthropic_client")
     def test_analyze_repository(

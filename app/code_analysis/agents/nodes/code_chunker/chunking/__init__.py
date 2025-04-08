@@ -14,7 +14,7 @@ Features:
 - Integration with language models for guided chunking
 """
 
-from ..models.code_chunk import CodeChunk
+from app.code_analysis.agents.nodes.code_chunker.models.code_chunk import CodeChunk
 
 from .chunk_manager import ChunkManager
 from .chunk_processor import (

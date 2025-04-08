@@ -6,7 +6,9 @@ This module contains functions for initializing and managing code parsers.
 import logging
 from typing import Any, Optional
 
-from ..parsers.factory import get_language_parser
+from app.code_analysis.agents.nodes.code_chunker.parsers.factory import (
+    get_language_parser,
+)
 
 
 class ParserManager:
@@ -43,7 +45,7 @@ class ParserManager:
             # Log the tree-sitter version if available
             version = getattr(tree_sitter, "__version__", "Unknown")
             self.logger.info("Tree-sitter version: %s", version)
-            
+
             # Remove references to non-existent attributes
             # self.logger.info(
             #     "Language version required: %s", tree_sitter.LANGUAGE_VERSION
@@ -126,7 +128,9 @@ class ParserManager:
         Returns:
             Dictionary containing the code structure
         """
-        from ..parsers.simple_parser import extract_code_elements_simple
+        from app.code_analysis.agents.nodes.code_chunker.parsers.simple_parser import (
+            extract_code_elements_simple,
+        )
 
         self.logger.debug("Processing file: %s", file_path)
 

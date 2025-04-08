@@ -45,55 +45,107 @@ def _generate_tree(
     output = []
     prefix = "│   "
 
-    def should_exclude(path: str) -> bool:
-        """Check if path should be excluded based on patterns."""
-        from fnmatch import fnmatch
+    # Define a pattern matching helper
+    pattern_matcher = _create_pattern_matcher(exclude_patterns, logger)
 
-        return any(
-            fnmatch(os.path.basename(path), pattern) for pattern in exclude_patterns
-        )
+    # Recursively add the directory contents
+    _add_directory_contents(startpath, "", output, prefix, pattern_matcher, logger)
 
-    def add_directory(path: str, indent: str = ""):
-        """Recursively add directory contents to output."""
-        if should_exclude(path):
-            logger.debug("Excluding path: %s", path)
-            return
-
-        dirs = []
-        files = []
-
-        try:
-            with os.scandir(path) as it:
-                for entry in it:
-                    if should_exclude(entry.path):
-                        continue
-                    if entry.is_dir():
-                        dirs.append(entry.name)
-                    else:
-                        files.append(entry.name)
-        except PermissionError as e:
-            logger.warning("Permission error accessing %s: %s", path, e)
-            return
-
-        dirs.sort()
-        files.sort()
-
-        for i, name in enumerate(dirs):
-            is_last = (i == len(dirs) - 1) and not files
-            marker = "└── " if is_last else "├── "
-            output.append(f"{indent}{marker}{name}/")
-
-            new_indent = indent + ("    " if is_last else prefix)
-            add_directory(os.path.join(path, name), new_indent)
-
-        for i, name in enumerate(files):
-            is_last = i == len(files) - 1
-            marker = "└── " if is_last else "├── "
-            output.append(f"{indent}{marker}{name}")
-
-    add_directory(startpath)
     logger.debug("Generated tree with %s lines", len(output))
     return "\n".join(output)
+
+
+def _create_pattern_matcher(exclude_patterns: list[str], logger: logging.Logger):
+    """Create a function that checks if a path should be excluded"""
+    from fnmatch import fnmatch
+
+    def should_exclude(path: str) -> bool:
+        """Check if path should be excluded based on patterns."""
+        result = any(
+            fnmatch(os.path.basename(path), pattern) for pattern in exclude_patterns
+        )
+        if result:
+            logger.debug("Excluding path: %s", path)
+        return result
+
+    return should_exclude
+
+
+def _add_directory_contents(
+    path: str,
+    indent: str,
+    output: list,
+    prefix: str,
+    should_exclude,
+    logger: logging.Logger,
+):
+    """Recursively add directory contents to output."""
+    if should_exclude(path):
+        return
+
+    dirs, files = _get_directory_contents(path, should_exclude, logger)
+
+    # Sort for consistent output
+    dirs.sort()
+    files.sort()
+
+    # Process subdirectories
+    _add_subdirectories(
+        path, dirs, files, indent, output, prefix, should_exclude, logger
+    )
+
+    # Process files
+    _add_files(files, indent, output)
+
+
+def _get_directory_contents(path: str, should_exclude, logger: logging.Logger):
+    """Get the contents of a directory, handling permissions."""
+    dirs = []
+    files = []
+
+    try:
+        with os.scandir(path) as it:
+            for entry in it:
+                if should_exclude(entry.path):
+                    continue
+                if entry.is_dir():
+                    dirs.append(entry.name)
+                else:
+                    files.append(entry.name)
+    except PermissionError as e:
+        logger.warning("Permission error accessing %s: %s", path, e)
+
+    return dirs, files
+
+
+def _add_subdirectories(
+    path: str,
+    dirs: list,
+    files: list,
+    indent: str,
+    output: list,
+    prefix: str,
+    should_exclude,
+    logger: logging.Logger,
+):
+    """Add subdirectories to the output."""
+    for i, name in enumerate(dirs):
+        is_last = (i == len(dirs) - 1) and not files
+        marker = "└── " if is_last else "├── "
+        output.append(f"{indent}{marker}{name}/")
+
+        new_indent = indent + ("    " if is_last else prefix)
+        _add_directory_contents(
+            os.path.join(path, name), new_indent, output, prefix, should_exclude, logger
+        )
+
+
+def _add_files(files: list, indent: str, output: list):
+    """Add files to the output."""
+    for i, name in enumerate(files):
+        is_last = i == len(files) - 1
+        marker = "└── " if is_last else "├── "
+        output.append(f"{indent}{marker}{name}")
 
 
 def detect_languages(

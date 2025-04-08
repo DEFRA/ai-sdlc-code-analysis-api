@@ -5,7 +5,7 @@ import logging
 import os
 from typing import Any, Callable
 
-from ..models.code_chunk import CodeChunk
+from app.code_analysis.agents.nodes.code_chunker.models.code_chunk import CodeChunk
 
 
 def create_simplified_structure(
@@ -46,23 +46,10 @@ def create_simplified_structure(
             )
             break
 
-        elements = code_structure[file_path]
-        # Use relative paths for better readability
-        rel_path = os.path.relpath(file_path, repo_path)
-
-        # Estimate tokens for this file's content
-        file_tokens = len(rel_path) * 2  # Path tokens (rough estimate)
-
-        # Add function and class names with details
-        if "functions" in elements and elements["functions"]:
-            file_tokens += sum(len(str(f)) for f in elements["functions"])
-
-        if "classes" in elements and elements["classes"]:
-            file_tokens += sum(len(str(c)) for c in elements["classes"])
-
-        # Add comments only if not filtering them out
-        if not filter_comments and "comments" in elements and elements["comments"]:
-            file_tokens += sum(len(c["text"]) for c in elements["comments"])
+        # Process the file and get token estimate
+        file_tokens, file_structure = _process_file(
+            file_path, code_structure, repo_path, filter_comments
+        )
 
         # Check if adding this file would exceed token limit
         if estimated_tokens + file_tokens >= token_limit:
@@ -73,36 +60,65 @@ def create_simplified_structure(
             )
             break
 
-        # Add file to simplified structure
-        simplified_structure[rel_path] = {}
-
-        # Add function and class names with details
-        if "functions" in elements and elements["functions"]:
-            logger.debug("Found functions: %s", elements["functions"])
-            simplified_structure[rel_path]["functions"] = [
-                {
-                    "name": f["name"],
-                    "type": f.get("type", "function"),
-                    "class": f.get("class", None),
-                }
-                for f in elements["functions"]
-            ]
-
-        if "classes" in elements and elements["classes"]:
-            simplified_structure[rel_path]["classes"] = [
-                {"name": c["name"]} for c in elements["classes"]
-            ]
-
-        # Add comments only if not filtering them out
-        if not filter_comments and "comments" in elements and elements["comments"]:
-            comment_texts = [c["text"] for c in elements["comments"]]
-            if comment_texts:
-                simplified_structure[rel_path]["comments"] = comment_texts
+        # Add the processed file to the simplified structure
+        rel_path = os.path.relpath(file_path, repo_path)
+        simplified_structure[rel_path] = file_structure
 
         file_count += 1
         estimated_tokens += file_tokens
 
     return simplified_structure, file_count
+
+
+def _process_file(
+    file_path: str,
+    code_structure: dict[str, Any],
+    repo_path: str,
+    filter_comments: bool,
+) -> tuple[int, dict[str, Any]]:
+    """Process a single file from the code structure.
+
+    Args:
+        file_path: Path to the file
+        code_structure: Dictionary mapping file paths to code elements
+        repo_path: Path to the repository
+        filter_comments: Whether to exclude comments from the simplified structure
+
+    Returns:
+        Tuple containing the estimated token count and the simplified file structure
+    """
+    elements = code_structure[file_path]
+    # Use relative paths for better readability
+    rel_path = os.path.relpath(file_path, repo_path)
+    file_structure = {}
+
+    # Estimate tokens for this file's content
+    file_tokens = len(rel_path) * 2  # Path tokens (rough estimate)
+
+    # Add function and class names with details
+    if "functions" in elements and elements["functions"]:
+        file_tokens += sum(len(str(f)) for f in elements["functions"])
+        file_structure["functions"] = [
+            {
+                "name": f["name"],
+                "type": f.get("type", "function"),
+                "class": f.get("class", None),
+            }
+            for f in elements["functions"]
+        ]
+
+    if "classes" in elements and elements["classes"]:
+        file_tokens += sum(len(str(c)) for c in elements["classes"])
+        file_structure["classes"] = [{"name": c["name"]} for c in elements["classes"]]
+
+    # Add comments only if not filtering them out
+    if not filter_comments and "comments" in elements and elements["comments"]:
+        comment_texts = [c["text"] for c in elements["comments"]]
+        file_tokens += sum(len(c["text"]) for c in elements["comments"])
+        if comment_texts:
+            file_structure["comments"] = comment_texts
+
+    return file_tokens, file_structure
 
 
 def expand_glob_patterns(

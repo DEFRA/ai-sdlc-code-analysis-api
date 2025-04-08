@@ -2,8 +2,9 @@ import logging
 from typing import Any, Callable, Optional
 
 from anthropic import Anthropic
-from ..models.code_chunk import CodeChunk
-from ..utils.logging_utils import PromptLogger
+
+from app.code_analysis.agents.nodes.code_chunker.models.code_chunk import CodeChunk
+from app.code_analysis.agents.nodes.code_chunker.utils.logging_utils import PromptLogger
 
 from .chunk_processor import process_chunk
 from .claude_integration import create_chunking_prompt, get_chunks_from_claude

@@ -10,9 +10,12 @@ import tempfile
 from pathlib import Path
 from typing import Callable
 
-from ..repository.clone import clone_repository
 from pathspec import PathSpec
 from pathspec.patterns import GitWildMatchPattern
+
+from app.code_analysis.agents.nodes.code_chunker.repository.clone import (
+    clone_repository,
+)
 
 
 class RepositoryManager:
