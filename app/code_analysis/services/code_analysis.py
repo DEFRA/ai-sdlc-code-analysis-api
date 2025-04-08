@@ -30,8 +30,19 @@ async def trigger_code_analysis(repo_url: str) -> str:
         "Triggering code analysis for repo %s with thread ID %s", repo_url, thread_id
     )
 
-    # Start the agent asynchronously, don't wait for completion
-    asyncio.create_task(create_code_analysis_agent(thread_id, repo_url))
+    # Start the agent asynchronously with proper error handling
+    async def run_analysis():
+        try:
+            await create_code_analysis_agent(thread_id, repo_url)
+            logger.info("Code analysis completed for thread %s", thread_id)
+        except Exception as e:
+            logger.error("Error in code analysis background task: %s", e)
+
+    # Create task with explicit name for better debugging
+    task = asyncio.create_task(run_analysis(), name=f"code_analysis_{thread_id}")
+
+    # Add task to event loop without waiting for it
+    asyncio.ensure_future(task)
 
     return thread_id
 

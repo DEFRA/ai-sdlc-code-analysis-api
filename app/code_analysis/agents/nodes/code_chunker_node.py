@@ -2,7 +2,10 @@
 Node implementation for code chunking functionality.
 """
 
+import asyncio
 import os
+from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from logging import getLogger
 
 from app.code_analysis.agents.nodes.code_chunker.analyzer import CodeAnalyzer
@@ -14,11 +17,17 @@ from app.code_analysis.models.code_analysis import CodeChunk
 
 logger = getLogger(__name__)
 
+# Create a dedicated thread pool for CPU-intensive operations
+thread_pool = ThreadPoolExecutor(max_workers=4, thread_name_prefix="code_analyzer_")
+
 
 async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
     """
     Analyze the repository and populate state with code chunks.
     Uses CodeAnalyzer to perform the actual analysis.
+
+    This implementation ensures CPU-intensive operations run in a thread pool
+    to avoid blocking the event loop.
     """
     logger.info("Analyzing code repository: %s", state.repo_url)
 
@@ -39,12 +48,21 @@ async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
         anthropic_api_key=anthropic_api_key,
     )
 
-    # Create analyzer and run the analysis
+    # Create analyzer
     analyzer = CodeAnalyzer(config)
 
     try:
-        # Perform the repository analysis
-        analysis_results = analyzer.analyze_repository()
+        # Run the potentially CPU-intensive repository analysis in a thread pool
+        # to avoid blocking the event loop
+        logger.info("Running repository analysis in thread pool")
+
+        # Create a partial function with all necessary arguments
+        analyze_func = partial(analyzer.analyze_repository)
+
+        # Run CPU-intensive work in thread pool
+        analysis_results = await asyncio.get_event_loop().run_in_executor(
+            thread_pool, analyze_func
+        )
 
         # Update state with analysis results
         state.file_structure = analysis_results.file_structure
@@ -69,7 +87,7 @@ async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
     except Exception as e:
         logger.error("Error during repository analysis: %s", str(e))
         # In case of error, initialize with empty data rather than failing the node
-        state.file_structure = "Error analyzing repository structure"
+        state.file_structure = f"Error analyzing repository structure: {str(e)}"
         state.languages_used = []
         state.ingested_repo_chunks = []
 
