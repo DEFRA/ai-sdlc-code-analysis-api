@@ -8,3 +8,7 @@ pymongo
 pymongo[aws,snappy,zstd,encryption]
 httpx
 uvicorn
+langgraph
+langgraph-checkpoint
+langgraph-checkpoint-mongodb
+langchain

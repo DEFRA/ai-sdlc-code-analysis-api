@@ -1,6 +1,6 @@
 # ai-sdlc-code-analysis-api
 
-This is work-in-progress. See [To Do List](./TODO.md)
+A FastAPI service for analysing code repositories as part of the AI SDLC project. This service provides code analysis capabilities through an API and leverages LangGraph for AI-powered code analysis workflows.
 
 - [ai-sdlc-code-analysis-api](#ai-sdlc-code-analysis-api)
   - [Requirements](#requirements)
@@ -13,12 +13,18 @@ This is work-in-progress. See [To Do List](./TODO.md)
     - [Testing](#testing)
     - [Production Mode](#production-mode)
   - [API endpoints](#api-endpoints)
+  - [Architecture](#architecture)
+    - [Data Model](#data-model)
+    - [System Components](#system-components)
+    - [Code Analysis Workflow](#code-analysis-workflow)
   - [Custom Cloudwatch Metrics](#custom-cloudwatch-metrics)
   - [Pipelines](#pipelines)
     - [Dependabot](#dependabot)
     - [SonarCloud](#sonarcloud)
   - [Licence](#licence)
     - [About the licence](#about-the-licence)
+  - [Graph Visualizations](#graph-visualizations)
+    - [create_code_analysis_graph](#create_code_analysis_graph)
 
 ## Requirements
 
@@ -43,7 +49,7 @@ pip install -r requirements-dev.txt
 pre-commit install
 ```
 
-This opinionated template uses the [`Fast API`](https://fastapi.tiangolo.com/) Python API framework.
+This opinionated template uses the [`Fast API`](https://fastapi.tiangolo.com/) Python API framework along with [LangGraph](https://python.langchain.com/docs/langgraph) for orchestrating AI-powered workflows.
 
 This and all other runtime python libraries must reside in `requirements.txt`
 
@@ -114,7 +120,7 @@ This configuration will:
 
 - Format your code with Ruff when you save a file
 - Fix linting issues automatically when possible
-- Organize imports according to isort rules
+- Organise imports according to isort rules
 
 #### Ruff Configuration
 
@@ -122,7 +128,7 @@ Ruff is configured in the `.ruff.toml` file
 
 ### Docker
 
-This repository uses Docker throughput its lifecycle i.e. both for local development and the environments. A benefit of this is that environment variables & secrets are managed consistently throughout the lifecycle
+This repository uses Docker throughout its lifecycle i.e. both for local development and the environments. A benefit of this is that environment variables & secrets are managed consistently throughout the lifecycle
 
 See the `Dockerfile` and `compose.yml` for details
 
@@ -142,7 +148,7 @@ Follow the convention below for local environment variables and secrets in local
 
 ### Development
 
-The app can be run locally using Docker compose.  This template contains a local environment with:
+The app can be run locally using Docker compose. This template contains a local environment with:
 
 - Localstack
 - MongoDB
@@ -170,7 +176,7 @@ pytest
 
 ### Production Mode
 
-To mimic the application running in `production mode locally run:
+To mimic the application running in production mode locally run:
 
 ```bash
 docker compose up --build -d
@@ -186,10 +192,56 @@ docker compose down
 
 ## API endpoints
 
-| Endpoint             | Description                    |
-| :------------------- | :----------------------------- |
-| `GET: /docs`         | Automatic API Swagger docs     |
-| `GET: /example`      | Simple example                 |
+| Endpoint                         | Method | Description                                                    |
+| :------------------------------- | :----- | :------------------------------------------------------------- |
+| `/docs`                          | GET    | Automatic API Swagger documentation                            |
+| `/api/v1/code-analysis`          | POST   | Triggers a new code analysis for a repository URL              |
+| `/api/v1/code-analysis/{thread_id}` | GET  | Gets the current state of a code analysis by thread ID        |
+
+## Architecture
+
+The Code Analysis API is built using FastAPI and integrates with LangGraph for running AI-powered code analysis workflows. The system architecture is detailed below.
+
+### Data Model
+
+```mermaid
+classDiagram
+    class CodeAnalysisState {
+        +String repo_url
+    }
+    class CodeAnalysisRequest {
+        +HttpUrl repo_url
+    }
+    class CodeAnalysisResponse {
+        +String thread_id
+    }
+
+    CodeAnalysisRequest --> CodeAnalysisResponse: triggers
+    CodeAnalysisResponse --> CodeAnalysisState: references
+```
+
+### System Components
+
+```mermaid
+flowchart TB
+    Client[Client] --> API[FastAPI Service]
+    API --> Router[Code Analysis Router]
+    Router --> Service[Code Analysis Service]
+    Service --> Agent[LangGraph Agent]
+    Agent --> MongoDB[(MongoDB)]
+```
+
+### Code Analysis Workflow
+
+The code analysis workflow is implemented using LangGraph, which provides a framework for creating stateful, multi-step reasoning systems with AI models. The workflow follows these steps:
+
+1. Client submits a repository URL through the API
+2. The system generates a unique thread ID for the analysis
+3. An asynchronous LangGraph agent is created to perform the analysis
+4. Analysis state is persisted in MongoDB using LangGraph checkpoints
+5. Clients can query the status of the analysis using the thread ID
+
+The LangGraph agent is defined in the `app/code_analysis/agents/code_analysis.py` file and uses a state graph to manage the analysis workflow. The current implementation includes an initialization step that sets up the analysis state.
 
 ## Custom Cloudwatch Metrics
 
@@ -216,7 +268,7 @@ THIS INFORMATION IS LICENSED UNDER THE CONDITIONS OF THE OPEN GOVERNMENT LICENCE
 
 The following attribution statement MUST be cited in your products and applications when using this information.
 
-> Contains public sector information licensed under the Open Government license v3
+> Contains public sector information licensed under the Open Government licence v3
 
 ### About the licence
 
@@ -225,3 +277,34 @@ information providers in the public sector to license the use and re-use of thei
 licence.
 
 It is designed to encourage use and re-use of information freely and flexibly, with only a few conditions.
+
+## Graph Visualizations
+
+This section contains automatically generated visualizations of the LangGraph workflows in this project.
+
+
+### create_code_analysis_graph
+
+# Graph: create_code_analysis_graph
+
+```mermaid
+---
+config:
+  flowchart:
+    curve: linear
+---
+graph TD;
+	__start__([<p>__start__</p>]):::first
+	initialize(initialize)
+	__end__([<p>__end__</p>]):::last
+	__start__ --> initialize;
+	initialize --> __end__;
+	classDef default fill:#f2f0ff,line-height:1.2
+	classDef first fill-opacity:0
+	classDef last fill:#bfb6fc
+
+```
+
+
+
+## Project Structure
