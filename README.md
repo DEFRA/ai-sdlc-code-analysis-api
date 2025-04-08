@@ -295,10 +295,10 @@ config:
 ---
 graph TD;
 	__start__([<p>__start__</p>]):::first
-	initialize(initialize)
+	code_chunker(code_chunker)
 	__end__([<p>__end__</p>]):::last
-	__start__ --> initialize;
-	initialize --> __end__;
+	__start__ --> code_chunker;
+	code_chunker --> __end__;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc
