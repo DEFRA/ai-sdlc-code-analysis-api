@@ -7,6 +7,7 @@ from logging import getLogger
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 
 from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
+from app.code_analysis.models.code_analysis import CodeChunk
 from app.common.mongo import get_db
 from app.config import config
 
@@ -49,25 +50,51 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysisState:
 
         # The checkpoint contains channel values that include our state
         checkpoint = checkpoint_tuple.checkpoint
+        logger.info("Raw checkpoint structure: %s", checkpoint)
+
         state_dict = checkpoint.get("channel_values", {})
+        logger.info("Channel values: %s", state_dict)
 
-        # Look for repo_url in various possible locations
-        repo_url = None
+        # Check if we have the required state fields directly in channel_values
+        repo_url = state_dict.get("repo_url")
+        file_structure = state_dict.get("file_structure", "")
+        languages_used = state_dict.get("languages_used", [])
 
-        # First check if repo_url is directly in the channel_values
-        if "repo_url" in state_dict:
-            repo_url = state_dict["repo_url"]
+        # Parse ingested_repo_chunks which might be CodeChunk objects or dictionaries
+        ingested_chunks_data = state_dict.get("ingested_repo_chunks", [])
+        logger.info("Ingested chunks data: %s", ingested_chunks_data)
 
-        # If we don't have a URL, log an error
-        if not repo_url:
-            logger.error(
-                "Could not find repo_url in checkpoint data for thread %s", thread_id
-            )
-            error_msg = f"No repository URL found for thread ID: {thread_id}"
-            raise ValueError(error_msg)
+        ingested_repo_chunks = []
 
-        # Return the state in the expected format
-        return CodeAnalysisState(repo_url=repo_url)
+        # Check if we have data to process
+        if ingested_chunks_data:
+            for chunk_data in ingested_chunks_data:
+                # If it's already a CodeChunk object, use it directly
+                if isinstance(chunk_data, CodeChunk):
+                    ingested_repo_chunks.append(chunk_data)
+                else:
+                    # Otherwise, treat it as a dict and create a CodeChunk from it
+                    try:
+                        if isinstance(chunk_data, dict):
+                            chunk = CodeChunk(
+                                chunk_id=chunk_data.get("chunk_id", ""),
+                                description=chunk_data.get("description", ""),
+                                files=chunk_data.get("files", []),
+                                content=chunk_data.get("content", ""),
+                            )
+                            ingested_repo_chunks.append(chunk)
+                    except Exception as e:
+                        logger.error("Error parsing chunk data: %s - %s", chunk_data, e)
+
+        # Return the complete state object
+        result_state = CodeAnalysisState(
+            repo_url=repo_url,
+            file_structure=file_structure,
+            languages_used=languages_used,
+            ingested_repo_chunks=ingested_repo_chunks,
+        )
+        logger.info("Returning state: %s", result_state.model_dump())
+        return result_state
 
     except Exception as e:
         logger.error("Error retrieving checkpoint for thread %s: %s", thread_id, e)
