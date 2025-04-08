@@ -34,50 +34,6 @@ services:
 
   ################################################################################
 
-  service:
-    build:
-      context: .
-    ports:
-      - 8085:8085
-    links:
-      - "localstack:localstack"
-      - "mongodb:mongodb"
-    depends_on:
-      localstack:
-        condition: service_healthy
-      mongodb:
-        condition: service_started
-    env_file:
-      - "compose/aws.env"
-      - "compose/secrets.env"
-    environment:
-      PORT: 8085
-      LOCALSTACK_ENDPOINT: http://localstack:4566
-      MONGO_URI: mongodb://mongodb:27017/
-    develop:
-      watch:
-        - action: rebuild
-          path: .
-          ignore:
-            - README.md
-            - "**/*.md"
-            - "**/test_*.py"
-            - tests/**/*
-            - .git/**/*
-            - .venv/**/*
-            - .pytest_cache/**/*
-            - .ruff_cache/**/*
-            - .vscode/**/*
-            - .github/**/*
-            - requirements-dev.txt
-            - pytest.ini
-            - .pre-commit-config.yaml
-            - sonar-project.properties
-            - LICENCE
-    networks:
-      - cdp-tenant
-
-################################################################################
 
 volumes:
   mongodb-data:
