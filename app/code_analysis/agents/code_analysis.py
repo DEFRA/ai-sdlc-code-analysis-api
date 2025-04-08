@@ -7,7 +7,7 @@ from logging import getLogger
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 from langgraph.graph import END, START, StateGraph
 
-from app.code_analysis.agents.nodes.code_analysis import code_chunker
+from app.code_analysis.agents.nodes.code_chunker_node import code_chunker
 from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
 from app.common.mongo import get_db
 from app.config import config

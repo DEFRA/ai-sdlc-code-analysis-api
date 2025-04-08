@@ -1,5 +1,5 @@
 """
-Node definitions for code analysis LangGraph.
+Node implementation for code chunking functionality.
 """
 
 from logging import getLogger
