@@ -2,8 +2,13 @@
 Node implementation for code chunking functionality.
 """
 
+import os
 from logging import getLogger
 
+from app.code_analysis.agents.nodes.code_chunker.analyzer import CodeAnalyzer
+from app.code_analysis.agents.nodes.code_chunker.config.analyzer_config import (
+    AnalyzerConfig,
+)
 from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
 from app.code_analysis.models.code_analysis import CodeChunk
 
@@ -13,51 +18,59 @@ logger = getLogger(__name__)
 async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
     """
     Analyze the repository and populate state with code chunks.
-    Currently using canned/placeholder data.
+    Uses CodeAnalyzer to perform the actual analysis.
     """
     logger.info("Analyzing code repository: %s", state.repo_url)
-    logger.info("Initial state: %s", state.model_dump())
 
-    # Populate with canned data for now
-    state.file_structure = """
-    /
-    ├── src/
-    │   ├── main.py
-    │   ├── utils/
-    │   │   ├── helpers.py
-    │   │   └── formatting.py
-    │   └── models/
-    │       └── data_models.py
-    ├── tests/
-    │   └── test_main.py
-    ├── README.md
-    └── requirements.txt
-    """
+    # Get Anthropic API key from environment variables
+    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
+    if not anthropic_api_key:
+        logger.error("ANTHROPIC_API_KEY environment variable is not set")
+        state.file_structure = (
+            "Error: ANTHROPIC_API_KEY environment variable is not set"
+        )
+        state.languages_used = []
+        state.ingested_repo_chunks = []
+        return state
 
-    state.languages_used = ["Python", "Markdown"]
+    # Configure the analyzer with the repository URL and API key
+    config = AnalyzerConfig(
+        repo_path_or_url=state.repo_url,
+        anthropic_api_key=anthropic_api_key,
+    )
 
-    state.ingested_repo_chunks = [
-        CodeChunk(
-            chunk_id="chunk1",
-            description="Main application code",
-            files=["src/main.py"],
-            content="def main():\n    print('Hello World')\n\nif __name__ == '__main__':\n    main()",
-        ),
-        CodeChunk(
-            chunk_id="chunk2",
-            description="Utility functions",
-            files=["src/utils/helpers.py", "src/utils/formatting.py"],
-            content="def format_text(text):\n    return text.strip()\n\ndef is_valid(data):\n    return data is not None",
-        ),
-        CodeChunk(
-            chunk_id="chunk3",
-            description="Data models",
-            files=["src/models/data_models.py"],
-            content="class User:\n    def __init__(self, name):\n        self.name = name",
-        ),
-    ]
+    # Create analyzer and run the analysis
+    analyzer = CodeAnalyzer(config)
 
-    # Log updated state
-    logger.info("Updated state: %s", state.model_dump())
-    logger.info("Completed code analysis for repository: %s", state.repo_url)
+    try:
+        # Perform the repository analysis
+        analysis_results = analyzer.analyze_repository()
+
+        # Update state with analysis results
+        state.file_structure = analysis_results.file_structure
+        state.languages_used = analysis_results.languages_used
+        state.ingested_repo_chunks = [
+            CodeChunk(
+                chunk_id=chunk.chunk_id,
+                description=chunk.description,
+                files=chunk.files,
+                content=chunk.content,
+            )
+            for chunk in analysis_results.ingested_repo_chunks
+        ]
+
+        # Log updated state summary
+        logger.info(
+            "Analysis completed: %d chunks processed, languages: %s",
+            len(state.ingested_repo_chunks),
+            ", ".join(state.languages_used),
+        )
+
+    except Exception as e:
+        logger.error("Error during repository analysis: %s", str(e))
+        # In case of error, initialize with empty data rather than failing the node
+        state.file_structure = "Error analyzing repository structure"
+        state.languages_used = []
+        state.ingested_repo_chunks = []
+
     return state

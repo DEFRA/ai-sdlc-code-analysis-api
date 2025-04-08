@@ -101,16 +101,32 @@ def get_chunks_from_claude(
     """
     logger.info("Sending request to Anthropic API for chunking analysis...")
 
+    # Validate that Anthropic client is properly initialized
+    if anthropic_client is None:
+        error_msg = "Anthropic client is not initialized. Check API key configuration."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+
     # Define the API call function for retry
     def make_api_call():
-        return anthropic_client.messages.create(
-            model="claude-3-5-sonnet-latest",
-            max_tokens=8192,
-            temperature=0,
-            timeout=timeout,
-            system=CLAUDE_SYSTEM_PROMPT,
-            messages=[{"role": "user", "content": prompt}],
-        )
+        try:
+            logger.debug("Calling Anthropic API with model: claude-3-5-sonnet-latest")
+            return anthropic_client.messages.create(
+                model="claude-3-5-sonnet-latest",
+                max_tokens=8192,
+                temperature=0,
+                timeout=timeout,
+                system=CLAUDE_SYSTEM_PROMPT,
+                messages=[{"role": "user", "content": prompt}],
+            )
+        except AttributeError as e:
+            logger.error("Anthropic client attribute error: %s", str(e))
+            logger.error("Client type: %s", type(anthropic_client))
+            logger.error("Client attributes: %s", dir(anthropic_client))
+            raise
+        except Exception as e:
+            logger.error("Unexpected error during API call: %s", str(e))
+            raise
 
     # Make the API call with retry
     start_time = time.time()

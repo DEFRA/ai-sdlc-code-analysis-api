@@ -43,6 +43,14 @@ class CodeAnalyzer:
             else None
         )
 
+        # Log Anthropic client initialization status
+        if self.anthropic_client is None:
+            self.logger.warning(
+                "Anthropic client not initialized. API key is missing or invalid."
+            )
+        else:
+            self.logger.info("Anthropic client successfully initialized.")
+
         # Set up logging for prompts and responses
         self.prompt_logger = PromptLogger(
             config.log_file_path, config.log_prompts, config.log_responses
