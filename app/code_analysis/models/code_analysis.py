@@ -5,10 +5,26 @@ Models for code analysis functionality.
 from pydantic import BaseModel, Field, HttpUrl
 
 
+class CodeChunk(BaseModel):
+    """A chunk of code from the repository."""
+
+    chunk_id: str = Field(..., description="The unique identifier")
+    description: str = Field(..., description="A description of the chunk")
+    files: list[str] = Field(..., description="The files within the chunk")
+    content: str = Field(..., description="The code and content within the chunk")
+
+
 class CodeAnalysisState(BaseModel):
     """State for the parent code analysis graph."""
 
     repo_url: str = Field(..., description="The URL of the repository to analyze")
+    file_structure: str = Field(..., description="The file structure of the repository")
+    languages_used: list[str] = Field(
+        ..., description="The languages used in the repository"
+    )
+    ingested_repo_chunks: list[CodeChunk] = Field(
+        ..., description="The chunks of code ingested from the repository"
+    )
 
 
 class CodeAnalysisRequest(BaseModel):
