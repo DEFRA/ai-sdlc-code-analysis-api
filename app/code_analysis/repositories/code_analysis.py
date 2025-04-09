@@ -112,10 +112,10 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
 
         # The checkpoint contains channel values that include our state
         checkpoint = checkpoint_tuple.checkpoint
-        logger.info("Raw checkpoint structure: %s", checkpoint)
+        logger.debug("Raw checkpoint structure: %s", checkpoint)
 
         state_dict = checkpoint.get("channel_values", {})
-        logger.info("Channel values: %s", state_dict)
+        logger.debug("Channel values: %s", state_dict)
 
         # Extract basic fields
         repo_url = state_dict.get("repo_url")
@@ -124,11 +124,11 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
 
         # Parse data for chunks using helper functions
         ingested_chunks_data = state_dict.get("ingested_repo_chunks", [])
-        logger.info("Ingested chunks data: %s", ingested_chunks_data)
+        logger.debug("Ingested chunks data: %s", ingested_chunks_data)
         ingested_repo_chunks = _parse_repo_chunks(ingested_chunks_data)
 
         analyzed_chunks_data = state_dict.get("analyzed_code_chunks", [])
-        logger.info("Analyzed chunks data: %s", analyzed_chunks_data)
+        logger.debug("Analyzed chunks data: %s", analyzed_chunks_data)
         analyzed_code_chunks = _parse_analyzed_chunks(analyzed_chunks_data)
 
         # Create the API model directly
@@ -140,7 +140,7 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
             analyzed_code_chunks=analyzed_code_chunks,
         )
 
-        logger.info("Returning API model: %s", result_state.model_dump())
+        logger.debug("Returning API model: %s", result_state.model_dump())
         return result_state
 
     except Exception as e:

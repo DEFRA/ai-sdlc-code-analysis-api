@@ -12,6 +12,7 @@ langgraph
 langgraph-checkpoint
 langgraph-checkpoint-mongodb
 langchain
+langchain_anthropic
 anthropic
 gitpython
 pydantic

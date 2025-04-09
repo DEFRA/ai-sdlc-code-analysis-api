@@ -51,44 +51,36 @@ async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
     # Create analyzer
     analyzer = CodeAnalyzer(config)
 
-    try:
-        # Run the potentially CPU-intensive repository analysis in a thread pool
-        # to avoid blocking the event loop
-        logger.info("Running repository analysis in thread pool")
+    # Run the potentially CPU-intensive repository analysis in a thread pool
+    # to avoid blocking the event loop
+    logger.info("Running repository analysis in thread pool")
 
-        # Create a partial function with all necessary arguments
-        analyze_func = partial(analyzer.analyze_repository)
+    # Create a partial function with all necessary arguments
+    analyze_func = partial(analyzer.analyze_repository)
 
-        # Run CPU-intensive work in thread pool
-        analysis_results = await asyncio.get_event_loop().run_in_executor(
-            thread_pool, analyze_func
+    # Run CPU-intensive work in thread pool
+    analysis_results = await asyncio.get_event_loop().run_in_executor(
+        thread_pool, analyze_func
+    )
+
+    # Update state with analysis results
+    state.file_structure = analysis_results.file_structure
+    state.languages_used = analysis_results.languages_used
+    state.ingested_repo_chunks = [
+        CodeChunk(
+            chunk_id=chunk.chunk_id,
+            description=chunk.description,
+            files=chunk.files,
+            content=chunk.content,
         )
+        for chunk in analysis_results.ingested_repo_chunks
+    ]
 
-        # Update state with analysis results
-        state.file_structure = analysis_results.file_structure
-        state.languages_used = analysis_results.languages_used
-        state.ingested_repo_chunks = [
-            CodeChunk(
-                chunk_id=chunk.chunk_id,
-                description=chunk.description,
-                files=chunk.files,
-                content=chunk.content,
-            )
-            for chunk in analysis_results.ingested_repo_chunks
-        ]
-
-        # Log updated state summary
-        logger.info(
-            "Analysis completed: %d chunks processed, languages: %s",
-            len(state.ingested_repo_chunks),
-            ", ".join(state.languages_used),
-        )
-
-    except Exception as e:
-        logger.error("Error during repository analysis: %s", str(e))
-        # In case of error, initialize with empty data rather than failing the node
-        state.file_structure = f"Error analyzing repository structure: {str(e)}"
-        state.languages_used = []
-        state.ingested_repo_chunks = []
+    # Log updated state summary
+    logger.info(
+        "Analysis completed: %d chunks processed, languages: %s",
+        len(state.ingested_repo_chunks),
+        ", ".join(state.languages_used),
+    )
 
     return state
