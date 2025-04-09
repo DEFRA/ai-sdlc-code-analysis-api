@@ -23,6 +23,7 @@ sleep 5
 export PORT=8085
 export LOCALSTACK_ENDPOINT=http://localhost:4566
 export MONGO_URI=mongodb://localhost:27017/
+export ENV=dev
 
 # Load application environment variables
 echo "Loading environment variables..."
@@ -48,8 +49,8 @@ if [ ! -d ".venv" ]; then
 fi
 
 # Start the application
-echo "Starting FastAPI application with Uvicorn..."
-uvicorn app.main:app --host 0.0.0.0 --port $PORT --reload
+echo "Starting FastAPI application..."
+uvicorn app.main:app --host 0.0.0.0 --port $PORT --reload --log-config=logging-dev.json
 
 # Cleanup function
 cleanup() {

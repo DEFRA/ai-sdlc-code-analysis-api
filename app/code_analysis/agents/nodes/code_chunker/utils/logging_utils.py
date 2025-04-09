@@ -21,8 +21,15 @@ def setup_logger(name: str, log_level: int = logging.INFO) -> logging.Logger:
     """
     logger = logging.getLogger(name)
 
+    # If the root logger has handlers, it means that logging is already configured
+    # from the application's logging configuration system
+    if logging.getLogger().handlers:
+        # Just set the level and return the logger
+        logger.setLevel(log_level)
+        return logger
+
     # Don't add handlers if they're already configured from the parent logger
-    if not logging.getLogger().handlers and not logger.handlers:
+    if not logger.handlers:
         # Create file handler
         file_handler = logging.FileHandler(f"{name}.log")
         file_handler.setLevel(logging.DEBUG)

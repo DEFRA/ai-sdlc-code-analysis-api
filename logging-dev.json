@@ -3,7 +3,7 @@
   "disable_existing_loggers": false,
   "formatters": {
       "dev": {
-          "format": "%(message)s"
+          "format": "%(levelname)s - %(name)s - %(message)s"
     }
   },
   "handlers": {
@@ -14,10 +14,18 @@
     }
   },
   "loggers": {
+    "uvicorn": {
+      "level": "INFO",
+      "propagate": true
+    },
+    "app": {
+      "level": "INFO",
+      "propagate": true
+    }
   },
   "root": {
       "level": "INFO",
       "handlers": ["console"],
-      "propagate": "no"
+      "propagate": false
   }
 }
