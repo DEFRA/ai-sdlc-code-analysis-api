@@ -2,6 +2,7 @@ import json
 import os
 from logging import getLogger
 
+import tiktoken
 from langchain_anthropic import ChatAnthropic
 
 from app.code_analysis.agents.states.code_chuck_analysis import CodeChunkAnalysisState
@@ -106,8 +107,33 @@ All string fields should contain detailed markdown-formatted text. For fields wi
         {"role": "user", "content": user_prompt},
     ]
 
+    # Count input tokens before making API call
+    token_counter = tiktoken.get_encoding("cl100k_base")
+    system_tokens = len(token_counter.encode(system_prompt))
+    user_tokens = len(token_counter.encode(user_prompt))
+    total_input_tokens = system_tokens + user_tokens
+    logger.info(
+        "Chunk %s - Input token count - System: %d, User: %d, Total: %d",
+        state.code_chunk.chunk_id,
+        system_tokens,
+        user_tokens,
+        total_input_tokens,
+    )
+
     # Use the structured model to get a properly parsed response
     analyzed_code_chunk = structured_model.invoke(messages)
+
+    # Count output tokens (approximate based on JSON serialization)
+    output_json = json.dumps(analyzed_code_chunk.model_dump())
+    output_tokens = len(token_counter.encode(output_json))
+    logger.info(
+        "Chunk %s - Output token count: %d", state.code_chunk.chunk_id, output_tokens
+    )
+    logger.info(
+        "Chunk %s - Total token usage (input + output): %d",
+        state.code_chunk.chunk_id,
+        total_input_tokens + output_tokens,
+    )
 
     logger.info("Successfully analyzed code chunk %s", state.code_chunk.chunk_id)
 
