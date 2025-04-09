@@ -7,10 +7,73 @@ from logging import getLogger
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 
 from app.code_analysis.models.code_analysis import CodeAnalysis, CodeChunk
+from app.code_analysis.models.code_analysis_chunk import CodeAnalysisChunk
 from app.common.mongo import get_db
 from app.config import config
 
 logger = getLogger(__name__)
+
+
+def _parse_repo_chunks(ingested_chunks_data):
+    """Helper to parse repository chunks from checkpoint data."""
+    ingested_repo_chunks = []
+
+    if not ingested_chunks_data:
+        return ingested_repo_chunks
+
+    for chunk_data in ingested_chunks_data:
+        # If it's already a CodeChunk object, use it directly
+        if isinstance(chunk_data, CodeChunk):
+            ingested_repo_chunks.append(chunk_data)
+        else:
+            # Otherwise, treat it as a dict and create a CodeChunk from it
+            try:
+                if isinstance(chunk_data, dict):
+                    chunk = CodeChunk(
+                        chunk_id=chunk_data.get("chunk_id", ""),
+                        description=chunk_data.get("description", ""),
+                        files=chunk_data.get("files", []),
+                        content=chunk_data.get("content", ""),
+                    )
+                    ingested_repo_chunks.append(chunk)
+            except Exception as e:
+                logger.error("Error parsing chunk data: %s - %s", chunk_data, e)
+
+    return ingested_repo_chunks
+
+
+def _parse_analyzed_chunks(analyzed_chunks_data):
+    """Helper to parse analyzed code chunks from checkpoint data."""
+    analyzed_code_chunks = []
+
+    if not analyzed_chunks_data:
+        return analyzed_code_chunks
+
+    for chunk_data in analyzed_chunks_data:
+        # If it's already a CodeAnalysisChunk object, use it directly
+        if isinstance(chunk_data, CodeAnalysisChunk):
+            analyzed_code_chunks.append(chunk_data)
+        else:
+            # Otherwise, treat it as a dict and create a CodeAnalysisChunk from it
+            try:
+                if isinstance(chunk_data, dict):
+                    chunk = CodeAnalysisChunk(
+                        summary=chunk_data.get("summary", "No summary available"),
+                        data_model=chunk_data.get("data_model"),
+                        interfaces=chunk_data.get("interfaces"),
+                        business_logic=chunk_data.get("business_logic"),
+                        dependencies=chunk_data.get("dependencies"),
+                        configuration=chunk_data.get("configuration"),
+                        infrastructure=chunk_data.get("infrastructure"),
+                        non_functional=chunk_data.get("non_functional"),
+                    )
+                    analyzed_code_chunks.append(chunk)
+            except Exception as e:
+                logger.error(
+                    "Error parsing analyzed chunk data: %s - %s", chunk_data, e
+                )
+
+    return analyzed_code_chunks
 
 
 async def get_analysis_state(thread_id: str) -> CodeAnalysis:
@@ -54,36 +117,19 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
         state_dict = checkpoint.get("channel_values", {})
         logger.info("Channel values: %s", state_dict)
 
-        # Check if we have the required state fields directly in channel_values
+        # Extract basic fields
         repo_url = state_dict.get("repo_url")
         file_structure = state_dict.get("file_structure", "")
         languages_used = state_dict.get("languages_used", [])
 
-        # Parse ingested_repo_chunks which might be CodeChunk objects or dictionaries
+        # Parse data for chunks using helper functions
         ingested_chunks_data = state_dict.get("ingested_repo_chunks", [])
         logger.info("Ingested chunks data: %s", ingested_chunks_data)
+        ingested_repo_chunks = _parse_repo_chunks(ingested_chunks_data)
 
-        ingested_repo_chunks = []
-
-        # Check if we have data to process
-        if ingested_chunks_data:
-            for chunk_data in ingested_chunks_data:
-                # If it's already a CodeChunk object, use it directly
-                if isinstance(chunk_data, CodeChunk):
-                    ingested_repo_chunks.append(chunk_data)
-                else:
-                    # Otherwise, treat it as a dict and create a CodeChunk from it
-                    try:
-                        if isinstance(chunk_data, dict):
-                            chunk = CodeChunk(
-                                chunk_id=chunk_data.get("chunk_id", ""),
-                                description=chunk_data.get("description", ""),
-                                files=chunk_data.get("files", []),
-                                content=chunk_data.get("content", ""),
-                            )
-                            ingested_repo_chunks.append(chunk)
-                    except Exception as e:
-                        logger.error("Error parsing chunk data: %s - %s", chunk_data, e)
+        analyzed_chunks_data = state_dict.get("analyzed_code_chunks", [])
+        logger.info("Analyzed chunks data: %s", analyzed_chunks_data)
+        analyzed_code_chunks = _parse_analyzed_chunks(analyzed_chunks_data)
 
         # Create the API model directly
         result_state = CodeAnalysis(
@@ -91,6 +137,7 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
             file_structure=file_structure,
             languages_used=languages_used,
             ingested_repo_chunks=ingested_repo_chunks,
+            analyzed_code_chunks=analyzed_code_chunks,
         )
 
         logger.info("Returning API model: %s", result_state.model_dump())
