@@ -8,7 +8,7 @@ from logging import getLogger
 from bson import ObjectId
 
 from app.code_analysis.agents.code_analysis import create_code_analysis_agent
-from app.code_analysis.models.code_analysis import CodeAnalysisState
+from app.code_analysis.models.code_analysis import CodeAnalysis
 from app.code_analysis.repositories.code_analysis import get_analysis_state
 
 logger = getLogger(__name__)
@@ -47,7 +47,7 @@ async def trigger_code_analysis(repo_url: str) -> str:
     return thread_id
 
 
-async def get_code_analysis_state(thread_id: str) -> CodeAnalysisState:
+async def get_code_analysis_state(thread_id: str) -> CodeAnalysis:
     """
     Gets the current state of a code analysis.
 

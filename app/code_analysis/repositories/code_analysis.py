@@ -6,15 +6,14 @@ from logging import getLogger
 
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 
-from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
-from app.code_analysis.models.code_analysis import CodeChunk
+from app.code_analysis.models.code_analysis import CodeAnalysis, CodeChunk
 from app.common.mongo import get_db
 from app.config import config
 
 logger = getLogger(__name__)
 
 
-async def get_analysis_state(thread_id: str) -> CodeAnalysisState:
+async def get_analysis_state(thread_id: str) -> CodeAnalysis:
     """
     Retrieves the current state of a code analysis thread from the database.
 
@@ -22,7 +21,7 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysisState:
         thread_id: The unique identifier for the analysis thread
 
     Returns:
-        The current state of the analysis
+        The current state of the analysis as a CodeAnalysis model
 
     Raises:
         ValueError: If the thread ID is not found
@@ -86,14 +85,15 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysisState:
                     except Exception as e:
                         logger.error("Error parsing chunk data: %s - %s", chunk_data, e)
 
-        # Return the complete state object
-        result_state = CodeAnalysisState(
+        # Create the API model directly
+        result_state = CodeAnalysis(
             repo_url=repo_url,
             file_structure=file_structure,
             languages_used=languages_used,
             ingested_repo_chunks=ingested_repo_chunks,
         )
-        logger.info("Returning state: %s", result_state.model_dump())
+
+        logger.info("Returning API model: %s", result_state.model_dump())
         return result_state
 
     except Exception as e:

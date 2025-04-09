@@ -14,8 +14,8 @@ class CodeChunk(BaseModel):
     content: str = Field(..., description="The code and content within the chunk")
 
 
-class CodeAnalysisState(BaseModel):
-    """State for the parent code analysis graph."""
+class CodeAnalysis(BaseModel):
+    """Code analysis data model for API responses."""
 
     repo_url: str = Field(..., description="The URL of the repository to analyze")
     file_structure: str = Field(..., description="The file structure of the repository")

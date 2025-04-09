@@ -7,9 +7,9 @@ from logging import getLogger
 from fastapi import APIRouter, HTTPException, status
 
 from app.code_analysis.models.code_analysis import (
+    CodeAnalysis,
     CodeAnalysisRequest,
     CodeAnalysisResponse,
-    CodeAnalysisState,
 )
 from app.code_analysis.services.code_analysis import (
     get_code_analysis_state,
@@ -42,8 +42,8 @@ async def create_code_analysis(request: CodeAnalysisRequest) -> CodeAnalysisResp
         ) from e
 
 
-@router.get("/{thread_id}", response_model=CodeAnalysisState)
-async def get_code_analysis(thread_id: str) -> CodeAnalysisState:
+@router.get("/{thread_id}", response_model=CodeAnalysis)
+async def get_code_analysis(thread_id: str) -> CodeAnalysis:
     """
     Gets the current state of a code analysis by thread ID.
     """
