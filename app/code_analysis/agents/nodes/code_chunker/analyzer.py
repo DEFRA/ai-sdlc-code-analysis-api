@@ -57,7 +57,10 @@ class CodeAnalyzer:
         )
 
         # Initialize repository manager
-        self.repo_manager = RepositoryManager(config.repo_path_or_url, self.logger)
+        self.repo_manager = RepositoryManager(
+            config.repo_path_or_url,
+            self.logger,
+        )
 
         # Initialize parser manager
         self.parser_manager = ParserManager(self.logger)
@@ -201,6 +204,8 @@ class CodeAnalyzer:
 
             # Generate file structure first since we need it for token counting
             self.logger.info("Generating file structure")
+
+            # Generate file structure with repository that was already filtered during copy/clone
             file_structure = generate_file_structure(
                 self.repo_manager.repo_path, self.logger
             )

@@ -21,6 +21,10 @@ def create_chunking_prompt(
     Returns:
         Formatted prompt string
     """
+    # Log the directory structure
+    logging.info("Directory structure passed to chunking prompt:")
+    logging.info(directory_structure)
+
     return f"""# Feature-Based Codebase Chunking for Requirements Analysis
 
 Analyze the codebase and chunk it according to product features and functionality. The goal is to create logical, feature-based groups that represent complete product capabilities, regardless of the technical architecture.

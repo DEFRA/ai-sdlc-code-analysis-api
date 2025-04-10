@@ -9,6 +9,9 @@ from app.code_analysis.agents.nodes.code_chunker.repository.file_structure impor
     detect_languages,
     generate_file_structure,
 )
+from app.code_analysis.agents.nodes.code_chunker.utils.exclusion_utils import (
+    create_exclusion_manager,
+)
 from app.code_analysis.agents.nodes.code_chunker.utils.repository_utils import (
     RepositoryManager,
 )
@@ -215,3 +218,56 @@ class TestRepositoryUtils:
         assert ".py" in languages
         assert ".java" in languages
         assert ".js" not in languages  # No JavaScript files in the sample repo
+
+    def test_clean_directory(self, sample_repo, mock_logger):
+        """Test cleaning excluded files from a directory."""
+        # Create a test repository with files that should be excluded
+        os.makedirs(os.path.join(sample_repo, "node_modules"), exist_ok=True)
+        os.makedirs(os.path.join(sample_repo, "venv"), exist_ok=True)
+
+        # Create some excluded files
+        with open(os.path.join(sample_repo, "package-lock.json"), "w") as f:
+            f.write("package lock file")
+
+        with open(os.path.join(sample_repo, "node_modules", "test.js"), "w") as f:
+            f.write("test module file")
+
+        with open(os.path.join(sample_repo, "example.pyc"), "w") as f:
+            f.write("compiled python file")
+
+        # Create a repository manager
+        repo_manager = RepositoryManager(sample_repo, mock_logger)
+
+        # Now manually clean the directory
+        if not repo_manager.exclusion_manager:
+            repo_manager.exclusion_manager = create_exclusion_manager(
+                sample_repo, repo_manager._base_exclude_patterns, mock_logger
+            )
+
+        # Test cleaning the directory
+        removed_count = repo_manager.exclusion_manager.clean_directory(sample_repo)
+
+        # Check that excluded files are removed
+        assert removed_count > 0
+        assert not os.path.exists(os.path.join(sample_repo, "package-lock.json"))
+        assert not os.path.exists(os.path.join(sample_repo, "example.pyc"))
+
+        # Check that node_modules directory was excluded (its pattern ends with /)
+        assert not os.path.exists(os.path.join(sample_repo, "node_modules", "test.js"))
+
+    def test_exclusion_manager_initialization(self, sample_repo, mock_logger):
+        """Test ExclusionManager initialization from the RepositoryManager."""
+        # Create a mock .gitignore file
+        with open(os.path.join(sample_repo, ".gitignore"), "w") as f:
+            f.write("*.log\ntmp/\n")
+
+        # Create a repository manager
+        repo_manager = RepositoryManager(sample_repo, mock_logger)
+
+        # Check that the exclusion_manager is created and has the correct patterns
+        assert repo_manager.exclusion_manager is not None
+
+        # Check if .gitignore patterns were loaded
+        exclusion_patterns = repo_manager.get_excluded_files()
+        assert "*.log" in exclusion_patterns
+        assert "tmp/" in exclusion_patterns

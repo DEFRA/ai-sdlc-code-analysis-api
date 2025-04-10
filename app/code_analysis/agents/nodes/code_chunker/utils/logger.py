@@ -16,6 +16,16 @@ def setup_logger(name: str = "code_analyzer") -> logging.Logger:
     """
     logger = logging.getLogger(name)
 
+    # If the root logger has handlers, it means that logging is already configured
+    # from the application's logging configuration system
+    if logging.getLogger().handlers:
+        # Just set the level as specified and don't add handlers
+        log_level = os.getenv("LOG_LEVEL", "INFO").upper()
+        logger.setLevel(getattr(logging, log_level))
+        return logger
+
+    # If we get here, no global logging config exists, so configure this logger manually
+
     # Get configuration from environment variables
     log_level = os.getenv("LOG_LEVEL", "INFO").upper()
     enable_file_logging = os.getenv("ENABLE_FILE_LOGGING", "false").lower() == "true"
