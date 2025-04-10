@@ -283,30 +283,6 @@ It is designed to encourage use and re-use of information freely and flexibly, w
 This section contains automatically generated visualizations of the LangGraph workflows in this project.
 
 
-### code_chunk_analysis_builder
-
-# Graph: code_chunk_analysis_builder
-
-```mermaid
----
-config:
-  flowchart:
-    curve: linear
----
-graph TD;
-	__start__([<p>__start__</p>]):::first
-	analyse_code_chunk(analyse_code_chunk)
-	__end__([<p>__end__</p>]):::last
-	__start__ --> analyse_code_chunk;
-	analyse_code_chunk --> __end__;
-	classDef default fill:#f2f0ff,line-height:1.2
-	classDef first fill-opacity:0
-	classDef last fill:#bfb6fc
-
-```
-
-
-
 ### create_code_analysis_graph
 
 # Graph: create_code_analysis_graph
@@ -321,10 +297,26 @@ graph TD;
 	__start__([<p>__start__</p>]):::first
 	code_chunker(code_chunker)
 	process_code_chunks(process_code_chunks)
+	generate_data_model_report(generate_data_model_report)
+	generate_interfaces_report(generate_interfaces_report)
+	generate_business_logic_report(generate_business_logic_report)
+	generate_dependencies_report(generate_dependencies_report)
+	generate_configuration_report(generate_configuration_report)
+	generate_infrastructure_report(generate_infrastructure_report)
+	generate_non_functional_report(generate_non_functional_report)
+	generate_consolidated_report(generate_consolidated_report)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> code_chunker;
 	code_chunker --> process_code_chunks;
-	process_code_chunks --> __end__;
+	generate_business_logic_report --> generate_dependencies_report;
+	generate_configuration_report --> generate_infrastructure_report;
+	generate_consolidated_report --> __end__;
+	generate_data_model_report --> generate_interfaces_report;
+	generate_dependencies_report --> generate_configuration_report;
+	generate_infrastructure_report --> generate_non_functional_report;
+	generate_interfaces_report --> generate_business_logic_report;
+	generate_non_functional_report --> generate_consolidated_report;
+	process_code_chunks --> generate_data_model_report;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
 	classDef last fill:#bfb6fc
