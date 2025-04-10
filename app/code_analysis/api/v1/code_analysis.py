@@ -5,6 +5,7 @@ API routes for code analysis functionality.
 from logging import getLogger
 
 from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import HTMLResponse
 
 from app.code_analysis.models.code_analysis import (
     CodeAnalysis,
@@ -57,6 +58,32 @@ async def get_code_analysis(thread_id: str) -> CodeAnalysis:
     except Exception as e:
         logger.error("Error getting code analysis state: %s", e)
         detail = f"Failed to get code analysis state: {str(e)}"
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail,
+        ) from e
+
+
+@router.get("/{thread_id}/consolidated-report", response_class=HTMLResponse)
+async def get_consolidated_report(thread_id: str) -> str:
+    """
+    Gets the consolidated report for a code analysis in a human-readable format.
+    Returns an HTML page that renders the markdown report with proper styling.
+    """
+    logger.info("Received consolidated report request for thread %s", thread_id)
+
+    try:
+        # Get the code analysis state
+        analysis = await get_code_analysis_state(thread_id)
+
+        return analysis.consolidated_report
+
+    except ValueError as e:
+        logger.error("Thread not found: %s", e)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except Exception as e:
+        logger.error("Error getting consolidated report: %s", e)
+        detail = f"Failed to get consolidated report: {str(e)}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=detail,
