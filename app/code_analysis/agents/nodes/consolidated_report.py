@@ -19,8 +19,27 @@ async def generate_consolidated_report(state: CodeAnalysisState) -> CodeAnalysis
     Returns:
         Updated state with the consolidated report
     """
+    # Collect all report sections that have content
+    report_parts = []
+
+    # Debug the report sections model
+    logger.debug("Report sections object: %s", state.report_sections)
+    logger.debug("Report sections fields: %s", state.report_sections.model_dump())
+
+    # Get all fields from the report_sections object that are not None
+    for field_name, field_value in state.report_sections.model_dump().items():
+        logger.debug(
+            "Processing field %s with value: %s",
+            field_name,
+            "Non-empty" if field_value else "Empty",
+        )
+        if field_value is not None:
+            report_parts.append(field_value)
+
+    logger.debug("Collected %d non-empty report parts", len(report_parts))
+
     # Combine all report sections into a single document
-    consolidated_report = "\n\n".join(state.report_sections)
+    consolidated_report = "\n\n".join(report_parts)
 
     # Add a header with repository information
     header = f"""# Code Analysis Report

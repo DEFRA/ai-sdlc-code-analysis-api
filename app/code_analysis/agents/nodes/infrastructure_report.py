@@ -67,4 +67,7 @@ Provide a complete, standalone report section focusing only on infrastructure, d
     logger.info("Infrastructure report generated")
 
     # Update the state with the new report section
-    return state.model_copy(update={"report_sections": [formatted_report]})
+    updated_report_sections = state.report_sections.model_copy(
+        update={"infrastructure": formatted_report}
+    )
+    return state.model_copy(update={"report_sections": updated_report_sections})

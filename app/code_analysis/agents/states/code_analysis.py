@@ -2,13 +2,13 @@
 State definitions for code analysis agents.
 """
 
-import operator
 from typing import Annotated
 
 from pydantic import BaseModel, Field
 
 from app.code_analysis.models.code_analysis import CodeChunk
 from app.code_analysis.models.code_analysis_chunk import CodeAnalysisChunk
+from app.code_analysis.models.report_section import ReportSection
 
 
 def unique_code_chunks_reducer(
@@ -47,8 +47,9 @@ class CodeAnalysisState(BaseModel):
     analyzed_code_chunks: Annotated[
         list[CodeAnalysisChunk], unique_code_chunks_reducer
     ] = Field([], description="The analyzed code chunks")
-    report_sections: Annotated[list[str], operator.add] = Field(
-        [], description="Stores the report sections as they are created"
+    report_sections: ReportSection = Field(
+        default_factory=ReportSection,
+        description="Structured report sections with different aspects of code analysis",
     )
     consolidated_report: str = Field(
         "", description="The final report as a single string"

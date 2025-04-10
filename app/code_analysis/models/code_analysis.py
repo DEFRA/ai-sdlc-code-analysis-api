@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field, HttpUrl
 
 from app.code_analysis.models.code_analysis_chunk import CodeAnalysisChunk
 from app.code_analysis.models.code_chunk import CodeChunk
+from app.code_analysis.models.report_section import ReportSection
 
 
 class CodeAnalysis(BaseModel):
@@ -22,8 +23,9 @@ class CodeAnalysis(BaseModel):
     analyzed_code_chunks: list[CodeAnalysisChunk] = Field(
         ..., description="The chunks of code analyzed from the repository"
     )
-    report_sections: list[str] = Field(
-        [], description="Stores the report sections as they are created"
+    report_sections: ReportSection = Field(
+        default_factory=ReportSection,
+        description="Structured report sections with different aspects of code analysis",
     )
     consolidated_report: str = Field(
         "", description="The final report as a single string"

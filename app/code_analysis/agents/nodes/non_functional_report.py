@@ -63,9 +63,12 @@ Provide a complete, standalone report section focusing only on non-functional as
         report = generate_report(system_prompt, user_prompt)
 
     # Create the formatted report section
-    formatted_report = f"# Non-Functional Aspects Report\n\n{report}"
+    formatted_report = f"# Non-Functional Report\n\n{report}"
 
     logger.info("Non-functional report generated")
 
     # Update the state with the new report section
-    return state.model_copy(update={"report_sections": [formatted_report]})
+    updated_report_sections = state.report_sections.model_copy(
+        update={"non_functional": formatted_report}
+    )
+    return state.model_copy(update={"report_sections": updated_report_sections})

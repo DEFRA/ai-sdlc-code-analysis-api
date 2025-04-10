@@ -65,5 +65,19 @@ Provide a complete, standalone report section focusing only on data models, enti
 
     logger.info("Data model report generated")
 
+    # Add debugging information
+    logger.debug(
+        "Report sections before update: %s", state.report_sections.model_dump()
+    )
+
     # Update the state with the new report section
-    return state.model_copy(update={"report_sections": [formatted_report]})
+    updated_report_sections = state.report_sections.model_copy(
+        update={"data_model": formatted_report}
+    )
+
+    # More debugging
+    logger.debug(
+        "Report sections after update: %s", updated_report_sections.model_dump()
+    )
+
+    return state.model_copy(update={"report_sections": updated_report_sections})

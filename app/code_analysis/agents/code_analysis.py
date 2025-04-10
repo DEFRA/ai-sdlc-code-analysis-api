@@ -97,6 +97,9 @@ async def create_code_analysis_agent(thread_id: str, repo_url: str) -> None:
         )
 
         logger.debug("Initial state created: %s", initial_state.model_dump())
+        logger.debug(
+            "Report sections structure: %s", initial_state.report_sections.model_dump()
+        )
 
         # Get the state graph
         workflow = create_code_analysis_graph()

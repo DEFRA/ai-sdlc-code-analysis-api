@@ -2,12 +2,14 @@
 Repository for code analysis data access.
 """
 
+import json
 from logging import getLogger
 
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 
 from app.code_analysis.models.code_analysis import CodeAnalysis, CodeChunk
 from app.code_analysis.models.code_analysis_chunk import CodeAnalysisChunk
+from app.code_analysis.models.report_section import ReportSection
 from app.common.mongo import get_db
 from app.config import config
 
@@ -116,7 +118,11 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
         logger.debug("Raw checkpoint structure: %s", checkpoint)
 
         state_dict = checkpoint.get("channel_values", {})
-        logger.debug("Channel values: %s", state_dict)
+        # Log the entire state_dict with formatting for better readability
+        logger.debug(
+            "Full channel values (pretty): %s",
+            json.dumps(state_dict, indent=2, default=str),
+        )
 
         # Extract basic fields
         repo_url = state_dict.get("repo_url")
@@ -133,7 +139,54 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
         analyzed_code_chunks = _parse_analyzed_chunks(analyzed_chunks_data)
 
         # Extract report sections and consolidated report
-        report_sections = state_dict.get("report_sections", [])
+        report_sections_data = state_dict.get("report_sections", {})
+        logger.debug("Raw report sections data: %s", report_sections_data)
+
+        # Create a ReportSection instance from the data
+        try:
+            # Handle different types of report_sections_data
+            if isinstance(report_sections_data, ReportSection):
+                # If it's already a ReportSection object, use it directly
+                report_sections = report_sections_data
+                logger.debug(
+                    "Using existing ReportSection object: %s",
+                    report_sections.model_dump(),
+                )
+            elif isinstance(report_sections_data, dict):
+                # If it's a dictionary with the expected structure
+                report_sections = ReportSection(**report_sections_data)
+                logger.debug(
+                    "Successfully created ReportSection from dictionary: %s",
+                    report_sections.model_dump(),
+                )
+            else:
+                # Try to convert to dictionary if it's a string or another format
+                try:
+                    # If it's a string representation, try to convert it to a dict
+                    if hasattr(report_sections_data, "__dict__"):
+                        # If it has __dict__, use that to create the object
+                        report_sections = ReportSection(**report_sections_data.__dict__)
+                    else:
+                        # Default to empty ReportSection
+                        logger.warning(
+                            "Unable to parse report_sections data type: %s, defaulting to empty ReportSection",
+                            type(report_sections_data),
+                        )
+                        report_sections = ReportSection()
+                except Exception as e:
+                    logger.warning(
+                        "Failed to convert report_sections_data to dictionary: %s",
+                        e,
+                    )
+                    report_sections = ReportSection()
+        except Exception as e:
+            logger.error(
+                "Error creating ReportSection from data: %s - %s",
+                report_sections_data,
+                e,
+            )
+            report_sections = ReportSection()
+
         consolidated_report = state_dict.get("consolidated_report", "")
 
         # Create the API model directly
