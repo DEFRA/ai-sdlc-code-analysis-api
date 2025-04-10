@@ -8,7 +8,27 @@ from logging import getLogger
 from langgraph.checkpoint.mongodb import AsyncMongoDBSaver
 from langgraph.graph import END, START, StateGraph
 
+from app.code_analysis.agents.nodes.business_logic_report import (
+    generate_business_logic_report,
+)
 from app.code_analysis.agents.nodes.code_chunker_node import code_chunker
+from app.code_analysis.agents.nodes.configuration_report import (
+    generate_configuration_report,
+)
+from app.code_analysis.agents.nodes.consolidated_report import (
+    generate_consolidated_report,
+)
+from app.code_analysis.agents.nodes.data_model_report import generate_data_model_report
+from app.code_analysis.agents.nodes.dependencies_report import (
+    generate_dependencies_report,
+)
+from app.code_analysis.agents.nodes.infrastructure_report import (
+    generate_infrastructure_report,
+)
+from app.code_analysis.agents.nodes.interfaces_report import generate_interfaces_report
+from app.code_analysis.agents.nodes.non_functional_report import (
+    generate_non_functional_report,
+)
 from app.code_analysis.agents.nodes.process_code_chunks import process_code_chunks
 from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
 from app.common.mongo import get_db
@@ -28,14 +48,30 @@ def create_code_analysis_graph() -> StateGraph:
     # Create the state graph
     workflow = StateGraph(CodeAnalysisState)
 
-    # Add nodes to the graph
     workflow.add_node("code_chunker", code_chunker)
     workflow.add_node("process_code_chunks", process_code_chunks)
+    workflow.add_node("generate_data_model_report", generate_data_model_report)
+    workflow.add_node("generate_interfaces_report", generate_interfaces_report)
+    workflow.add_node("generate_business_logic_report", generate_business_logic_report)
+    workflow.add_node("generate_dependencies_report", generate_dependencies_report)
+    workflow.add_node("generate_configuration_report", generate_configuration_report)
+    workflow.add_node("generate_infrastructure_report", generate_infrastructure_report)
+    workflow.add_node("generate_non_functional_report", generate_non_functional_report)
+    workflow.add_node("generate_consolidated_report", generate_consolidated_report)
 
-    # Set the entry point
     workflow.add_edge(START, "code_chunker")
     workflow.add_edge("code_chunker", "process_code_chunks")
-    workflow.add_edge("process_code_chunks", END)
+    workflow.add_edge("process_code_chunks", "generate_data_model_report")
+    workflow.add_edge("generate_data_model_report", "generate_interfaces_report")
+    workflow.add_edge("generate_interfaces_report", "generate_business_logic_report")
+    workflow.add_edge("generate_business_logic_report", "generate_dependencies_report")
+    workflow.add_edge("generate_dependencies_report", "generate_configuration_report")
+    workflow.add_edge("generate_configuration_report", "generate_infrastructure_report")
+    workflow.add_edge(
+        "generate_infrastructure_report", "generate_non_functional_report"
+    )
+    workflow.add_edge("generate_non_functional_report", "generate_consolidated_report")
+    workflow.add_edge("generate_consolidated_report", END)
 
     return workflow
 

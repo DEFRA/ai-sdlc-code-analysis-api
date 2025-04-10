@@ -132,6 +132,10 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
         logger.debug("Analyzed chunks data: %s", analyzed_chunks_data)
         analyzed_code_chunks = _parse_analyzed_chunks(analyzed_chunks_data)
 
+        # Extract report sections and consolidated report
+        report_sections = state_dict.get("report_sections", [])
+        consolidated_report = state_dict.get("consolidated_report", "")
+
         # Create the API model directly
         result_state = CodeAnalysis(
             repo_url=repo_url,
@@ -139,6 +143,8 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
             languages_used=languages_used,
             ingested_repo_chunks=ingested_repo_chunks,
             analyzed_code_chunks=analyzed_code_chunks,
+            report_sections=report_sections,
+            consolidated_report=consolidated_report,
         )
 
         logger.debug("Returning API model: %s", result_state.model_dump())

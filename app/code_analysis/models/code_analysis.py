@@ -22,6 +22,12 @@ class CodeAnalysis(BaseModel):
     analyzed_code_chunks: list[CodeAnalysisChunk] = Field(
         ..., description="The chunks of code analyzed from the repository"
     )
+    report_sections: list[str] = Field(
+        [], description="Stores the report sections as they are created"
+    )
+    consolidated_report: str = Field(
+        "", description="The final report as a single string"
+    )
 
 
 class CodeAnalysisRequest(BaseModel):
