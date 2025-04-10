@@ -58,6 +58,7 @@ def _parse_analyzed_chunks(analyzed_chunks_data):
             try:
                 if isinstance(chunk_data, dict):
                     chunk = CodeAnalysisChunk(
+                        chunk_id=chunk_data.get("chunk_id", "unknown_id"),
                         summary=chunk_data.get("summary", "No summary available"),
                         data_model=chunk_data.get("data_model"),
                         interfaces=chunk_data.get("interfaces"),

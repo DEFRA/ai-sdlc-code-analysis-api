@@ -23,52 +23,26 @@ def generate_file_structure(repo_path: str, logger: logging.Logger) -> str:
     return tree
 
 
-def _generate_tree(
-    startpath: str, logger: logging.Logger, exclude_patterns: list[str] = None
-) -> str:
+def _generate_tree(startpath: str, logger: logging.Logger) -> str:
     """Generate a text representation of the directory structure.
 
     Args:
         startpath: Path to start the tree from
         logger: Logger instance for logging
-        exclude_patterns: Patterns to exclude from the tree
 
     Returns:
         String representation of the directory tree
     """
-    if exclude_patterns is None:
-        exclude_patterns = [".git", "__pycache__", "*.pyc"]
-
     logger.debug("Generating directory tree for %s", startpath)
-    logger.debug("Using exclude patterns: %s", exclude_patterns)
 
     output = []
     prefix = "│   "
 
-    # Define a pattern matching helper
-    pattern_matcher = _create_pattern_matcher(exclude_patterns, logger)
-
     # Recursively add the directory contents
-    _add_directory_contents(startpath, "", output, prefix, pattern_matcher, logger)
+    _add_directory_contents(startpath, "", output, prefix, logger)
 
     logger.debug("Generated tree with %s lines", len(output))
     return "\n".join(output)
-
-
-def _create_pattern_matcher(exclude_patterns: list[str], logger: logging.Logger):
-    """Create a function that checks if a path should be excluded"""
-    from fnmatch import fnmatch
-
-    def should_exclude(path: str) -> bool:
-        """Check if path should be excluded based on patterns."""
-        result = any(
-            fnmatch(os.path.basename(path), pattern) for pattern in exclude_patterns
-        )
-        if result:
-            logger.debug("Excluding path: %s", path)
-        return result
-
-    return should_exclude
 
 
 def _add_directory_contents(
@@ -76,29 +50,23 @@ def _add_directory_contents(
     indent: str,
     output: list,
     prefix: str,
-    should_exclude,
     logger: logging.Logger,
 ):
     """Recursively add directory contents to output."""
-    if should_exclude(path):
-        return
-
-    dirs, files = _get_directory_contents(path, should_exclude, logger)
+    dirs, files = _get_directory_contents(path, logger)
 
     # Sort for consistent output
     dirs.sort()
     files.sort()
 
     # Process subdirectories
-    _add_subdirectories(
-        path, dirs, files, indent, output, prefix, should_exclude, logger
-    )
+    _add_subdirectories(path, dirs, files, indent, output, prefix, logger)
 
     # Process files
     _add_files(files, indent, output)
 
 
-def _get_directory_contents(path: str, should_exclude, logger: logging.Logger):
+def _get_directory_contents(path: str, logger: logging.Logger):
     """Get the contents of a directory, handling permissions."""
     dirs = []
     files = []
@@ -106,8 +74,6 @@ def _get_directory_contents(path: str, should_exclude, logger: logging.Logger):
     try:
         with os.scandir(path) as it:
             for entry in it:
-                if should_exclude(entry.path):
-                    continue
                 if entry.is_dir():
                     dirs.append(entry.name)
                 else:
@@ -125,7 +91,6 @@ def _add_subdirectories(
     indent: str,
     output: list,
     prefix: str,
-    should_exclude,
     logger: logging.Logger,
 ):
     """Add subdirectories to the output."""
@@ -136,7 +101,7 @@ def _add_subdirectories(
 
         new_indent = indent + ("    " if is_last else prefix)
         _add_directory_contents(
-            os.path.join(path, name), new_indent, output, prefix, should_exclude, logger
+            os.path.join(path, name), new_indent, output, prefix, logger
         )
 
 

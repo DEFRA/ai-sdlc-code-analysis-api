@@ -24,9 +24,6 @@ def analyse_code_chunk(state: CodeChunkAnalysisState) -> CodeChunkAnalysisState:
         max_tokens=8192,
     )
 
-    # Bind the model with structured output
-    structured_model = model.with_structured_output(CodeAnalysisChunk)
-
     # Prepare the input for the model
     code_chunk_data = {
         "chunk_id": state.code_chunk.chunk_id,
@@ -83,9 +80,10 @@ Your analysis must return ONLY a valid JSON object with these fields:
    - Maintainability and compliance considerations
    - Set to null if no significant non-functional elements exist
 
-Your response must be a valid JSON object following EXACTLY this structure:
+Include the chunk_id in your response JSON object. Your response must be a valid JSON object following EXACTLY this structure:
 
 {{
+  "chunk_id": "{state.code_chunk.chunk_id}",
   "summary": "string",
   "data_model": "string",
   "interfaces": "string",
@@ -120,8 +118,35 @@ All string fields should contain detailed markdown-formatted text. For fields wi
         total_input_tokens,
     )
 
+    # Check if input tokens exceed 200,000 and log files array if they do
+    if total_input_tokens > 150000:
+        logger.warning(
+            "Chunk %s - Input token count exceeds 150,000 tokens (%d). Files in this chunk: %s",
+            state.code_chunk.chunk_id,
+            total_input_tokens,
+            json.dumps(state.code_chunk.files, indent=2),
+        )
+        logger.warning(
+            "Chunk %s - Content causing token limit excess: %s",
+            state.code_chunk.chunk_id,
+            state.code_chunk.content,
+        )
+
     # Use the structured model to get a properly parsed response
+    structured_model = model.with_structured_output(CodeAnalysisChunk)
     analyzed_code_chunk = structured_model.invoke(messages)
+
+    # If for some reason the chunk_id was not set, set it manually
+    if analyzed_code_chunk.chunk_id != state.code_chunk.chunk_id:
+        logger.warning(
+            "Chunk ID in response (%s) doesn't match expected ID (%s). Fixing...",
+            analyzed_code_chunk.chunk_id,
+            state.code_chunk.chunk_id,
+        )
+        # Create a new instance with the correct chunk_id
+        analyzed_code_chunk_dict = analyzed_code_chunk.model_dump()
+        analyzed_code_chunk_dict["chunk_id"] = state.code_chunk.chunk_id
+        analyzed_code_chunk = CodeAnalysisChunk(**analyzed_code_chunk_dict)
 
     # Count output tokens (approximate based on JSON serialization)
     output_json = json.dumps(analyzed_code_chunk.model_dump())
