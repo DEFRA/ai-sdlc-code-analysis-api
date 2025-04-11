@@ -305,17 +305,19 @@ graph TD;
 	generate_infrastructure_report(generate_infrastructure_report)
 	generate_non_functional_report(generate_non_functional_report)
 	generate_consolidated_report(generate_consolidated_report)
+	generate_product_requirements(generate_product_requirements)
 	__end__([<p>__end__</p>]):::last
 	__start__ --> code_chunker;
 	code_chunker --> process_code_chunks;
 	generate_business_logic_report --> generate_dependencies_report;
 	generate_configuration_report --> generate_infrastructure_report;
-	generate_consolidated_report --> __end__;
+	generate_consolidated_report --> generate_product_requirements;
 	generate_data_model_report --> generate_interfaces_report;
 	generate_dependencies_report --> generate_configuration_report;
 	generate_infrastructure_report --> generate_non_functional_report;
 	generate_interfaces_report --> generate_business_logic_report;
 	generate_non_functional_report --> generate_consolidated_report;
+	generate_product_requirements --> __end__;
 	process_code_chunks --> generate_data_model_report;
 	classDef default fill:#f2f0ff,line-height:1.2
 	classDef first fill-opacity:0
