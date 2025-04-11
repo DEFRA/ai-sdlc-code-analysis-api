@@ -6,6 +6,7 @@ from .csharp_parser import CSharpParser
 from .java_parser import JavaParser
 from .javascript_parser import JavaScriptParser
 from .python_parser import PythonParser
+from .scala_parser import ScalaParser
 
 
 def get_language_parser(
@@ -31,6 +32,7 @@ def get_language_parser(
         "typescript": JavaScriptParser,
         "java": JavaParser,
         "csharp": CSharpParser,
+        "scala": ScalaParser,
     }.get(language)
 
     if not parser_class:
