@@ -188,6 +188,7 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
             report_sections = ReportSection()
 
         consolidated_report = state_dict.get("consolidated_report", "")
+        product_requirements = state_dict.get("product_requirements", "")
 
         # Create the API model directly
         result_state = CodeAnalysis(
@@ -198,6 +199,7 @@ async def get_analysis_state(thread_id: str) -> CodeAnalysis:
             analyzed_code_chunks=analyzed_code_chunks,
             report_sections=report_sections,
             consolidated_report=consolidated_report,
+            product_requirements=product_requirements,
         )
 
         logger.debug("Returning API model: %s", result_state.model_dump())

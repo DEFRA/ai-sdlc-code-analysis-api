@@ -24,6 +24,9 @@ from app.code_analysis.agents.nodes.non_functional_report import (
     generate_non_functional_report,
 )
 from app.code_analysis.agents.nodes.process_code_chunks import process_code_chunks
+from app.code_analysis.agents.nodes.product_requirements_report import (
+    generate_product_requirements,
+)
 
 __all__ = [
     "code_chunker",
@@ -36,4 +39,5 @@ __all__ = [
     "generate_infrastructure_report",
     "generate_non_functional_report",
     "generate_consolidated_report",
+    "generate_product_requirements",
 ]

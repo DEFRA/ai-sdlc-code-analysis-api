@@ -88,3 +88,29 @@ async def get_consolidated_report(thread_id: str) -> str:
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=detail,
         ) from e
+
+
+@router.get("/{thread_id}/product-requirements-report", response_class=HTMLResponse)
+async def get_product_requirements_report(thread_id: str) -> str:
+    """
+    Gets the product requirements for a code analysis in a human-readable format.
+    Returns the product requirements extracted from the analysis.
+    """
+    logger.info("Received product requirements report request for thread %s", thread_id)
+
+    try:
+        # Get the code analysis state
+        analysis = await get_code_analysis_state(thread_id)
+
+        return analysis.product_requirements
+
+    except ValueError as e:
+        logger.error("Thread not found: %s", e)
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e)) from e
+    except Exception as e:
+        logger.error("Error getting product requirements report: %s", e)
+        detail = f"Failed to get product requirements report: {str(e)}"
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail,
+        ) from e

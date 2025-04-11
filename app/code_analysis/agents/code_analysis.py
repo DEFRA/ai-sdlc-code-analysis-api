@@ -30,6 +30,9 @@ from app.code_analysis.agents.nodes.non_functional_report import (
     generate_non_functional_report,
 )
 from app.code_analysis.agents.nodes.process_code_chunks import process_code_chunks
+from app.code_analysis.agents.nodes.product_requirements_report import (
+    generate_product_requirements,
+)
 from app.code_analysis.agents.states.code_analysis import CodeAnalysisState
 from app.common.mongo import get_db
 from app.config import config
@@ -58,6 +61,7 @@ def create_code_analysis_graph() -> StateGraph:
     workflow.add_node("generate_infrastructure_report", generate_infrastructure_report)
     workflow.add_node("generate_non_functional_report", generate_non_functional_report)
     workflow.add_node("generate_consolidated_report", generate_consolidated_report)
+    workflow.add_node("generate_product_requirements", generate_product_requirements)
 
     workflow.add_edge(START, "code_chunker")
     workflow.add_edge("code_chunker", "process_code_chunks")
@@ -71,7 +75,8 @@ def create_code_analysis_graph() -> StateGraph:
         "generate_infrastructure_report", "generate_non_functional_report"
     )
     workflow.add_edge("generate_non_functional_report", "generate_consolidated_report")
-    workflow.add_edge("generate_consolidated_report", END)
+    workflow.add_edge("generate_consolidated_report", "generate_product_requirements")
+    workflow.add_edge("generate_product_requirements", END)
 
     return workflow
 
@@ -97,9 +102,8 @@ async def create_code_analysis_agent(thread_id: str, repo_url: str) -> None:
         )
 
         logger.debug("Initial state created: %s", initial_state.model_dump())
-        logger.debug(
-            "Report sections structure: %s", initial_state.report_sections.model_dump()
-        )
+        # Instead of trying to call model_dump() on the FieldInfo object, just log that it exists
+        logger.debug("Report sections structure initialized")
 
         # Get the state graph
         workflow = create_code_analysis_graph()

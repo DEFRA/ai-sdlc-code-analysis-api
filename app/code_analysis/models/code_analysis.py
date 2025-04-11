@@ -30,6 +30,9 @@ class CodeAnalysis(BaseModel):
     consolidated_report: str = Field(
         "", description="The final report as a single string"
     )
+    product_requirements: str = Field(
+        "", description="Product requirements generated from the consolidated report"
+    )
 
 
 class CodeAnalysisRequest(BaseModel):
