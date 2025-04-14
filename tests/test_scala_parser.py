@@ -14,7 +14,7 @@ def parser():
 @pytest.fixture
 def sample_scala_code():
     """Sample Scala code with Cats Effect patterns."""
-    return '''
+    return """
 import cats.effect.{IO, Resource}
 import cats.effect.std.Console
 import cats.syntax.all._
@@ -32,9 +32,9 @@ object Logger {
   def create[F[_]: Async]: Resource[F, Logger[F]] =
     Resource.pure(
       new Logger[F] {
-        def info(message: String): F[Unit] = 
+        def info(message: String): F[Unit] =
           Console[F].println(s"INFO: $message")
-        
+
         def error(message: String): F[Unit] =
           Console[F].errorln(s"ERROR: $message")
       }
@@ -82,7 +82,7 @@ object Main extends IOApp {
       logger <- Logger.create[IO]
       service = new UserService[IO](logger)
       result <- service.getUser("1")
-        .handleErrorWith(err => 
+        .handleErrorWith(err =>
           logger.error(s"Failed to get user: ${err.getMessage}").as(None)
         )
       _ <- result.fold(
@@ -97,7 +97,7 @@ object Main extends IOApp {
     program.use(IO.pure)
   }
 }
-'''
+"""
 
 
 def test_extract_imports(parser, sample_scala_code):
@@ -113,20 +113,17 @@ def test_extract_imports(parser, sample_scala_code):
 def test_extract_classes(parser, sample_scala_code):
     """Test extraction of classes, traits, and objects."""
     classes = parser.extract_classes(sample_scala_code)
-    
-    # Check if we found all the main types
-    class_types = {cls["type"]: cls["name"] for cls in classes}
-    assert class_types == {
-        "trait": "Logger",
-        "object": "Logger",
-        "class": "User",
-        "class": "UserService",
-        "object": "Main"
-    }
+
+    # Replace the class_types dictionary with direct assertions
+    classes_by_name = {cls["name"]: cls["type"] for cls in classes}
+    assert classes_by_name["Logger"] == "trait"
+    assert classes_by_name["User"] == "class"
+    assert classes_by_name["UserService"] == "class"
+    assert classes_by_name["Main"] == "object"
 
     # Find the UserService class for detailed testing
     user_service = next(cls for cls in classes if cls["name"] == "UserService")
-    
+
     # Check type parameters and constraints
     assert user_service["type_parameters"] == ["F[_]"]
     assert "Async" in user_service["type_class_constraints"][0]
@@ -135,7 +132,7 @@ def test_extract_classes(parser, sample_scala_code):
     methods = {method["name"]: method for method in user_service["methods"]}
     assert "getUser" in methods
     assert "processUsers" in methods
-    
+
     # Check for comprehension in getUser method
     get_user_method = methods["getUser"]
     assert get_user_method["is_for_comprehension"]
@@ -145,10 +142,9 @@ def test_extract_for_comprehensions(parser, sample_scala_code):
     """Test extraction of for comprehensions."""
     classes = parser.extract_classes(sample_scala_code)
     user_service = next(cls for cls in classes if cls["name"] == "UserService")
-    
     comprehensions = user_service["for_comprehensions"]
     assert len(comprehensions) > 0
-    
+
     # Check the getUser method's for comprehension
     comp = comprehensions[0]
     assert "logger.info" in comp["generators"]
@@ -159,15 +155,15 @@ def test_extract_for_comprehensions(parser, sample_scala_code):
 def test_extract_effect_patterns(parser, sample_scala_code):
     """Test extraction of Cats Effect specific patterns."""
     classes = parser.extract_classes(sample_scala_code)
-    
+
     # Check Main object for IO patterns
     main = next(cls for cls in classes if cls["name"] == "Main")
     effect_patterns = main["effect_patterns"]
-    
+
     # Verify IO constructors and operations
     constructs = [pattern["construct"] for pattern in effect_patterns]
     assert any("IO.println" in construct for construct in constructs)
-    
+
     # Check error handling
     error_handling = main["error_handling"]
     handler_types = [handler["type"] for handler in error_handling]
@@ -178,7 +174,7 @@ def test_extract_implicits(parser, sample_scala_code):
     """Test extraction of implicit definitions."""
     classes = parser.extract_classes(sample_scala_code)
     logger_object = next(cls for cls in classes if cls["name"] == "Logger")
-    
+
     # Check implicit parameters
     implicits = logger_object["implicits"]
     assert any(implicit["name"] == "L" for implicit in implicits)
@@ -188,20 +184,21 @@ def test_extract_type_signatures(parser, sample_scala_code):
     """Test extraction of type signatures with effect types."""
     classes = parser.extract_classes(sample_scala_code)
     user_service = next(cls for cls in classes if cls["name"] == "UserService")
-    
+
     methods = user_service["methods"]
     get_user_method = next(m for m in methods if m["name"] == "getUser")
-    
+
     assert "F[Option[User]]" in get_user_method["type_signature"]
 
 
 def test_extract_error_handling(parser, sample_scala_code):
     """Test extraction of error handling patterns."""
     classes = parser.extract_classes(sample_scala_code)
-    
+
     # Check UserService for error handling in Stream
     user_service = next(cls for cls in classes if cls["name"] == "UserService")
     error_handlers = user_service["error_handling"]
-    
+
     handler_types = [handler["type"] for handler in error_handlers]
-    assert "handleErrorWith" in handler_types 
+    assert "handleErrorWith" in handler_types
+    
