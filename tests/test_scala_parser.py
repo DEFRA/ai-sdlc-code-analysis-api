@@ -201,4 +201,3 @@ def test_extract_error_handling(parser, sample_scala_code):
 
     handler_types = [handler["type"] for handler in error_handlers]
     assert "handleErrorWith" in handler_types
-    
