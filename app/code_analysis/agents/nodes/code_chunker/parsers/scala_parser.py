@@ -1,8 +1,7 @@
 """Scala parser module with support for functional patterns."""
 
-from typing import Any, Dict, List, Optional
-
 import re
+from typing import Any, Optional
 
 from .base_parser import BaseParser
 
@@ -78,7 +77,7 @@ class ScalaParser(BaseParser):
             r")"
         )
 
-    def extract_imports(self, content: str) -> List[str]:
+    def extract_imports(self, content: str) -> list[str]:
         """Extract import statements from Scala code, including Cats imports.
 
         Args:
@@ -91,7 +90,7 @@ class ScalaParser(BaseParser):
         imports = re.finditer(import_pattern, content)
         return [match.group(1).strip() for match in imports]
 
-    def extract_classes(self, content: str) -> List[Dict[str, Any]]:
+    def extract_classes(self, content: str) -> list[dict[str, Any]]:
         """Extract class definitions with enhanced Cats Effect support.
 
         Args:
@@ -140,7 +139,7 @@ class ScalaParser(BaseParser):
 
         return classes
 
-    def _extract_methods(self, class_content: str) -> List[Dict[str, Any]]:
+    def _extract_methods(self, class_content: str) -> list[dict[str, Any]]:
         """Extract method definitions including functional patterns.
 
         Args:
@@ -177,7 +176,7 @@ class ScalaParser(BaseParser):
 
         return methods
 
-    def _extract_for_comprehensions(self, content: str) -> List[Dict[str, Any]]:
+    def _extract_for_comprehensions(self, content: str) -> list[dict[str, Any]]:
         """Extract for comprehensions from the code.
 
         Args:
@@ -199,7 +198,7 @@ class ScalaParser(BaseParser):
             )
         return comprehensions
 
-    def _extract_implicits(self, content: str) -> List[Dict[str, Any]]:
+    def _extract_implicits(self, content: str) -> list[dict[str, Any]]:
         """Extract implicit definitions.
 
         Args:
@@ -225,7 +224,7 @@ class ScalaParser(BaseParser):
                 )
         return implicits
 
-    def _extract_type_parameters(self, content: str) -> Optional[List[str]]:
+    def _extract_type_parameters(self, content: str) -> Optional[list[str]]:
         """Extract type parameters from class/trait/method definitions.
 
         Args:
@@ -257,7 +256,7 @@ class ScalaParser(BaseParser):
             return match.group(1).strip()
         return None
 
-    def _extract_block_info(self, content: str, start_pos: int) -> Optional[Dict[str, Any]]:
+    def _extract_block_info(self, content: str, start_pos: int) -> Optional[dict[str, Any]]:
         """Extract a code block starting from a given position.
 
         Args:
@@ -290,7 +289,7 @@ class ScalaParser(BaseParser):
 
         return None
 
-    def _extract_effect_patterns(self, content: str) -> List[Dict[str, Any]]:
+    def _extract_effect_patterns(self, content: str) -> list[dict[str, Any]]:
         """Extract Cats Effect specific patterns and constructs.
 
         Args:
@@ -316,7 +315,7 @@ class ScalaParser(BaseParser):
                 )
         return patterns
 
-    def _extract_error_handling(self, content: str) -> List[Dict[str, Any]]:
+    def _extract_error_handling(self, content: str) -> list[dict[str, Any]]:
         """Extract error handling patterns.
 
         Args:
@@ -342,7 +341,7 @@ class ScalaParser(BaseParser):
                 )
         return handlers
 
-    def _extract_type_info(self, content: str) -> Dict[str, Any]:
+    def _extract_type_info(self, content: str) -> dict[str, Any]:
         """Extract type parameters and type class constraints.
 
         Args:
@@ -364,4 +363,5 @@ class ScalaParser(BaseParser):
                 constraint.strip() for constraint in match.group(1).split(",")
             ]
 
-        return type_info 
+        return type_info
+    
