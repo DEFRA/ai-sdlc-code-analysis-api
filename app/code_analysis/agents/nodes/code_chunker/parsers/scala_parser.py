@@ -16,7 +16,9 @@ class ScalaParser(BaseParser):
         self.file_extensions = [".scala"]
 
         # Scala-specific patterns
-        self.class_pattern = r"(?:case\s+)?class\s+(\w+)(?:\[.*?\])?\s*(?:extends|\(|{|$)"
+        self.class_pattern = (
+            r"(?:case\s+)?class\s+(\w+)(?:\[.*?\])?\s*(?:extends|\(|{|$)"
+        )
         self.object_pattern = r"object\s+(\w+)(?:\s+extends\s+\w+)?\s*\{"
         self.trait_pattern = r"trait\s+(\w+)(?:\[.*?\])?(?:\s+extends\s+\w+)?\s*\{"
 
@@ -118,15 +120,21 @@ class ScalaParser(BaseParser):
                         "name": class_name,
                         "type": kind,
                         "start_line": self._get_line_number(content, start_pos),
-                        "end_line": self._get_line_number(content, class_info["end_pos"]),
+                        "end_line": self._get_line_number(
+                            content, class_info["end_pos"]
+                        ),
                         "methods": self._extract_methods(class_info["body"]),
                         "content": class_info["body"],
                         "for_comprehensions": self._extract_for_comprehensions(
                             class_info["body"]
                         ),
                         "implicits": self._extract_implicits(class_info["body"]),
-                        "effect_patterns": self._extract_effect_patterns(class_info["body"]),
-                        "error_handling": self._extract_error_handling(class_info["body"]),
+                        "effect_patterns": self._extract_effect_patterns(
+                            class_info["body"]
+                        ),
+                        "error_handling": self._extract_error_handling(
+                            class_info["body"]
+                        ),
                     }
 
                     # Extract type parameters and type class constraints
@@ -159,7 +167,9 @@ class ScalaParser(BaseParser):
                 method_data = {
                     "name": method_name,
                     "start_line": self._get_line_number(class_content, start_pos),
-                    "end_line": self._get_line_number(class_content, method_info["end_pos"]),
+                    "end_line": self._get_line_number(
+                        class_content, method_info["end_pos"]
+                    ),
                     "content": method_info["body"],
                     "is_for_comprehension": bool(
                         re.match(self.for_comp_pattern, class_content[start_pos:])
@@ -256,7 +266,9 @@ class ScalaParser(BaseParser):
             return match.group(1).strip()
         return None
 
-    def _extract_block_info(self, content: str, start_pos: int) -> Optional[dict[str, Any]]:
+    def _extract_block_info(
+        self, content: str, start_pos: int
+    ) -> Optional[dict[str, Any]]:
         """Extract a code block starting from a given position.
 
         Args:
@@ -364,4 +376,3 @@ class ScalaParser(BaseParser):
             ]
 
         return type_info
-    
