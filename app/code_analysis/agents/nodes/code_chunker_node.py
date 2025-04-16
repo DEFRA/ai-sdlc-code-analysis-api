@@ -31,21 +31,31 @@ async def code_chunker(state: CodeAnalysisState) -> CodeAnalysisState:
     """
     logger.info("Analyzing code repository: %s", state.repo_url)
 
-    # Get Anthropic API key from environment variables
-    anthropic_api_key = os.environ.get("ANTHROPIC_API_KEY")
-    if not anthropic_api_key:
-        logger.error("ANTHROPIC_API_KEY environment variable is not set")
+    # Get AWS Bedrock configuration from environment variables
+    aws_bedrock_model = os.environ.get("AWS_BEDROCK_MODEL")
+    aws_region = os.environ.get("AWS_REGION")
+
+    if not aws_bedrock_model:
+        logger.error("AWS_BEDROCK_MODEL environment variable is not set")
         state.file_structure = (
-            "Error: ANTHROPIC_API_KEY environment variable is not set"
+            "Error: AWS_BEDROCK_MODEL environment variable is not set"
         )
         state.languages_used = []
         state.ingested_repo_chunks = []
         return state
 
-    # Configure the analyzer with the repository URL and API key
+    if not aws_region:
+        logger.error("AWS_REGION environment variable is not set")
+        state.file_structure = "Error: AWS_REGION environment variable is not set"
+        state.languages_used = []
+        state.ingested_repo_chunks = []
+        return state
+
+    # Configure the analyzer with the repository URL and AWS Bedrock settings
     config = AnalyzerConfig(
         repo_path_or_url=state.repo_url,
-        anthropic_api_key=anthropic_api_key,
+        aws_bedrock_model=aws_bedrock_model,
+        aws_region=aws_region,
     )
 
     # Create analyzer

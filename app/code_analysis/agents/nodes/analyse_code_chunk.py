@@ -3,7 +3,7 @@ import os
 from logging import getLogger
 
 import tiktoken
-from langchain_anthropic import ChatAnthropic
+from langchain_aws import ChatBedrock
 
 from app.code_analysis.agents.states.code_chuck_analysis import CodeChunkAnalysisState
 from app.code_analysis.models.code_analysis_chunk import CodeAnalysisChunk
@@ -16,12 +16,11 @@ def analyse_code_chunk(state: CodeChunkAnalysisState) -> CodeChunkAnalysisState:
 
     logger.info("Analyzing code chunk %s", state.code_chunk.chunk_id)
 
-    # Initialize the Anthropic model using LangChain
-    model = ChatAnthropic(
-        model="claude-3-5-sonnet-latest",
-        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
-        temperature=0,
-        max_tokens=8192,
+    # Initialize the Claude model using Bedrock
+    model = ChatBedrock(
+        model_id=os.environ.get("AWS_BEDROCK_MODEL"),
+        region_name=os.environ.get("AWS_REGION"),
+        model_kwargs={"temperature": 0, "max_tokens": 8192},
     )
 
     # Prepare the input for the model

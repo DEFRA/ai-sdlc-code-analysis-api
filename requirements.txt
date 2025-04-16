@@ -12,8 +12,7 @@ langgraph
 langgraph-checkpoint
 langgraph-checkpoint-mongodb
 langchain
-langchain_anthropic
-anthropic
+langchain_aws
 gitpython
 pydantic
 tree-sitter>=0.23.6

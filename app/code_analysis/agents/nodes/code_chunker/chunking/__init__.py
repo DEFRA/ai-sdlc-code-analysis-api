@@ -24,8 +24,7 @@ from .chunk_processor import (
 )
 from .claude_integration import (
     create_chunking_prompt,
-    extract_text_from_response,
-    get_chunks_from_claude,
+    get_chunks_from_bedrock,
     parse_chunks_from_response,
 )
 
@@ -34,8 +33,7 @@ __all__ = [
     "process_chunk",
     "read_file_content",
     "create_chunking_prompt",
-    "get_chunks_from_claude",
-    "extract_text_from_response",
+    "get_chunks_from_bedrock",
     "parse_chunks_from_response",
     "ChunkManager",
     "CodeChunk",
