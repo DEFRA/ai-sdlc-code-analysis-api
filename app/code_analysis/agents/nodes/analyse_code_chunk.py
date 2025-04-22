@@ -41,43 +41,53 @@ Your analysis must return ONLY a valid JSON object with these fields:
 1. summary (required): Concise functional description of what this code does from a business perspective (3-5 sentences).
 
 2. data_model (string): If applicable, include:
+   - Logical data models and entities
    - Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
    - Detailed breakdown of each model's fields, types, and relationships
+   - Data flow and transformations
+   - Data validation and integrity checks
    - Set to null if no data models are present
 
-1. interfaces (string): If applicable, document:
-   - Method signatures with parameters and return types
+3. interfaces (string): If applicable, include:
+   - User interfaces (UI)
    - API endpoints with request/response formats
-   - Interface contracts and requirements
+   - Batch processing interfaces
+   - Event-driven interfaces (e.g., message queues)
+   - Any other interfaces exposed by the code
    - Set to null if no interfaces are defined
 
-1. business_logic (string): If applicable, analyze:
+4. business_logic (string): If applicable, include:
    - Algorithms and processing workflows
    - Business rules, validations, and conditional logic
    - Set to null if no significant business logic exists
 
-1. dependencies (string): Always analyze:
-   - Internal dependencies (imports from other project files)
-   - External dependencies (third-party libraries)
+5. dependencies (string): If applicable, include:
+   - External dependencies (libraries, frameworks)
    - API calls or external services
-   - Set to null only if truly no dependencies exist
+   - Database connections and ORM usage
+   - Third-party integrations
+   - Versioning and compatibility considerations
+   - Set to null if no dependencies exist
 
-1. configuration (string): If applicable, document:
+6. configuration (string): If applicable, include:
+   - Configuration files (e.g., YAML, JSON)
    - Configuration variables with defaults and valid options
    - Environment variables and config files
-   - Loading mechanisms
+   - Secrets management and sensitive data handling
    - Set to null if no configuration exists
 
-1. infrastructure (string): If applicable, analyze:
+7. infrastructure (string): If applicable, include:
+   - Infrastructure as code (IaC) elements (e.g., Terraform, CloudFormation)
    - Deployment requirements and environment needs
    - Resource requirements and scaling considerations
    - Set to null if no infrastructure elements exist
 
-1. non_functional (string): If applicable, document:
-   - Performance, security, reliability aspects
-   - Error handling, logging, monitoring
-   - Maintainability and compliance considerations
-   - Set to null if no significant non-functional elements exist
+8. non_functional (string): If applicable, include:
+   - Performance, security, and reliability aspects
+   - Error handling, logging, monitoring, and alerting
+   - Compliance considerations
+   - Data and privacy considerations
+   - Set to null if no non-functional elements exist
 
 Include the chunk_id in your response JSON object. Your response must be a valid JSON object following EXACTLY this structure:
 
