@@ -68,7 +68,6 @@ class ChunkManager:
             chunks_data = get_chunks_from_bedrock(
                 prompt,
                 self.bedrock_config,
-                self.api_timeout,
                 self.logger,
                 operation_with_retry,
             )

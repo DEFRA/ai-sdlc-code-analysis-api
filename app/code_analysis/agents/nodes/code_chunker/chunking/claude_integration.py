@@ -94,7 +94,6 @@ def get_chunks_from_bedrock(
     Args:
         prompt: The prompt to send to Bedrock
         config: Configuration with AWS Bedrock settings
-        timeout: Timeout in seconds for the API call
         logger: Logger instance for logging
         operation_with_retry: Function to handle retrying operations
 
