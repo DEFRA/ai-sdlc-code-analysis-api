@@ -15,9 +15,9 @@ class TestCodeAnalyzer:
     """Functional tests for the CodeAnalyzer class."""
 
     @pytest.fixture
-    def mock_anthropic_client(self):
-        """Mock the Anthropic client for testing."""
-        with patch("anthropic.Anthropic") as mock_client:
+    def mock_bedrock_client(self):
+        """Mock the AWS Bedrock client for testing."""
+        with patch("boto3.client") as mock_client:
             yield mock_client
 
     @pytest.fixture
@@ -30,7 +30,8 @@ class TestCodeAnalyzer:
         """Test configuration for the analyzer."""
         return AnalyzerConfig(
             repo_path_or_url=test_repo_url,
-            anthropic_api_key="test_key",
+            aws_bedrock_model="anthropic.claude-3-5-sonnet-20240620-v1:0",
+            aws_region="eu-west-2",
             log_prompts=True,
             log_responses=True,
             log_file_path="test_logs.log",
@@ -68,7 +69,7 @@ class TestCodeAnalyzer:
         "app.code_analysis.agents.nodes.code_chunker.analyzer.generate_file_structure"
     )
     @patch("app.code_analysis.agents.nodes.code_chunker.analyzer.detect_languages")
-    @pytest.mark.usefixtures("mock_anthropic_client")
+    @pytest.mark.usefixtures("mock_bedrock_client")
     def test_analyze_repository(
         self,
         mock_detect_languages,

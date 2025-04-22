@@ -3,11 +3,10 @@ import os
 from typing import Any, Optional
 
 import tiktoken
-from anthropic import Anthropic
 
 from .chunking.chunk_manager import ChunkManager
 from .chunking.chunk_processor import create_simplified_structure
-from .chunking.claude_integration import CLAUDE_SYSTEM_PROMPT, create_chunking_prompt
+from .chunking.claude_integration import SYSTEM_PROMPT, create_chunking_prompt
 from .config.analyzer_config import AnalyzerConfig
 from .models.code_chunk import RepositoryAnalysis
 from .repository.file_structure import detect_languages, generate_file_structure
@@ -36,20 +35,23 @@ class CodeAnalyzer:
         self.logger = custom_logger
         self.logger.setLevel(config.log_level)
 
-        # Initialize Anthropic client if API key is provided
-        self.anthropic_client = (
-            Anthropic(api_key=config.anthropic_api_key)
-            if config.anthropic_api_key
-            else None
-        )
+        # Initialize Bedrock client if AWS settings are provided
+        self.bedrock_config = config
 
-        # Log Anthropic client initialization status
-        if self.anthropic_client is None:
+        # Log Bedrock client initialization status
+        if not config.aws_bedrock_model and not os.environ.get("AWS_BEDROCK_MODEL"):
             self.logger.warning(
-                "Anthropic client not initialized. API key is missing or invalid."
+                "AWS Bedrock model not specified. Check configuration or AWS_BEDROCK_MODEL environment variable."
             )
         else:
-            self.logger.info("Anthropic client successfully initialized.")
+            self.logger.info("AWS Bedrock model successfully configured.")
+
+        if not config.aws_region and not os.environ.get("AWS_REGION"):
+            self.logger.warning(
+                "AWS region not specified. Check configuration or AWS_REGION environment variable."
+            )
+        else:
+            self.logger.info("AWS region successfully configured.")
 
         # Set up logging for prompts and responses
         self.prompt_logger = PromptLogger(
@@ -70,7 +72,7 @@ class CodeAnalyzer:
 
         # Initialize chunk manager
         self.chunk_manager = ChunkManager(
-            self.anthropic_client,
+            self.bedrock_config,
             config.api_timeout,
             self.logger,
             self.prompt_logger,
@@ -84,7 +86,8 @@ class CodeAnalyzer:
     def from_params(
         cls,
         repo_path_or_url: str,
-        anthropic_api_key: Optional[str] = None,
+        aws_bedrock_model: Optional[str] = None,
+        aws_region: Optional[str] = None,
         log_prompts: bool = False,
         log_file_path: Optional[str] = None,
         log_responses: bool = False,
@@ -97,10 +100,11 @@ class CodeAnalyzer:
 
         Args:
             repo_path_or_url: Local path or URL to the repository
-            anthropic_api_key: API key for Anthropic
-            log_prompts: Whether to log prompts sent to Anthropic
+            aws_bedrock_model: AWS Bedrock model ID
+            aws_region: AWS region
+            log_prompts: Whether to log prompts sent to LLM
             log_file_path: Path to the log file
-            log_responses: Whether to log responses from Anthropic
+            log_responses: Whether to log responses from LLM
             api_timeout: Timeout in seconds for API calls
             log_level: Logging level to use
             max_files_to_parse: Maximum number of files to parse
@@ -111,7 +115,8 @@ class CodeAnalyzer:
         """
         config = AnalyzerConfig(
             repo_path_or_url=repo_path_or_url,
-            anthropic_api_key=anthropic_api_key,
+            aws_bedrock_model=aws_bedrock_model,
+            aws_region=aws_region,
             log_prompts=log_prompts,
             log_file_path=log_file_path,
             log_responses=log_responses,
@@ -163,7 +168,7 @@ class CodeAnalyzer:
     def count_tokens(self, prompt: str) -> int:
         """Count the number of tokens in a text string using tiktoken.
 
-        This includes both the user prompt and the system prompt that will be sent to Claude,
+        This includes both the user prompt and the system prompt that will be sent to the LLM,
         plus overhead for message formatting and metadata.
 
         Args:
@@ -174,7 +179,7 @@ class CodeAnalyzer:
         """
         try:
             # Count tokens for both system and user prompts
-            system_tokens = len(self.token_counter.encode(CLAUDE_SYSTEM_PROMPT))
+            system_tokens = len(self.token_counter.encode(SYSTEM_PROMPT))
             user_tokens = len(self.token_counter.encode(prompt))
 
             # Add overhead for message formatting and metadata (approximately 100-200 tokens)

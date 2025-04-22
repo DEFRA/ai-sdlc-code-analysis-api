@@ -5,7 +5,7 @@ Utility functions for report generation nodes.
 import os
 from logging import getLogger
 
-from langchain_anthropic import ChatAnthropic
+from langchain_aws import ChatBedrock
 
 logger = getLogger(__name__)
 
@@ -23,11 +23,11 @@ def generate_report(system_prompt: str, user_prompt: str) -> str:
     """
     logger.info("Generating report using custom prompts")
 
-    # Initialize the Anthropic model using LangChain
-    model = ChatAnthropic(
-        model="claude-3-5-sonnet-latest",
-        anthropic_api_key=os.environ.get("ANTHROPIC_API_KEY"),
-        temperature=0,
+    # Initialize the Claude model using Bedrock
+    model = ChatBedrock(
+        model_id=os.environ.get("AWS_BEDROCK_MODEL"),
+        region_name=os.environ.get("AWS_REGION"),
+        model_kwargs={"temperature": 0, "max_tokens": 8192},
     )
 
     # Generate the report section

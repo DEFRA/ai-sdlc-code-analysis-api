@@ -1,18 +1,21 @@
-"""Claude API integration for code chunking."""
+"""Bedrock API integration for code chunking."""
 
 import json
 import logging
+import os
 import time
 from typing import Any, Callable
 
-# System prompt used for all Claude API calls
-CLAUDE_SYSTEM_PROMPT = "You are a meticulous code organization expert who ensures complete coverage when analyzing codebases. Your specialty is identifying logical structures in code repositories and ensuring no files are overlooked. Always verify completeness before providing your analysis and return only valid JSON in your responses, with no additional text."
+from langchain_aws import ChatBedrock
+
+# System prompt used for all LLM API calls
+SYSTEM_PROMPT = "You are a meticulous code organization expert who ensures complete coverage when analyzing codebases. Your specialty is identifying logical structures in code repositories and ensuring no files are overlooked. Always verify completeness before providing your analysis and return only valid JSON in your responses, with no additional text."
 
 
 def create_chunking_prompt(
     directory_structure: str, simplified_structure: dict[str, Any]
 ) -> str:
-    """Create a prompt for Claude to chunk the codebase.
+    """Create a prompt for the LLM to chunk the codebase.
 
     Args:
         directory_structure: String representation of the directory structure
@@ -77,23 +80,20 @@ Return the chunks in the following JSON format:
         }}
     ]
 }}
-```
 """
 
 
-def get_chunks_from_claude(
+def get_chunks_from_bedrock(
     prompt: str,
-    anthropic_client: Any,
-    timeout: int,
+    config: Any,
     logger: logging.Logger,
     operation_with_retry: Callable,
 ) -> list[dict[str, Any]]:
-    """Send request to Claude API and get chunks data.
+    """Send request to AWS Bedrock and get chunks data.
 
     Args:
-        prompt: The prompt to send to Claude
-        anthropic_client: Anthropic client instance
-        timeout: Timeout in seconds for the API call
+        prompt: The prompt to send to Bedrock
+        config: Configuration with AWS Bedrock settings
         logger: Logger instance for logging
         operation_with_retry: Function to handle retrying operations
 
@@ -103,90 +103,65 @@ def get_chunks_from_claude(
     Raises:
         RuntimeError: If API call fails or response processing fails
     """
-    logger.info("Sending request to Anthropic API for chunking analysis...")
+    logger.info("Sending request to AWS Bedrock for chunking analysis...")
 
-    # Validate that Anthropic client is properly initialized
-    if anthropic_client is None:
-        error_msg = "Anthropic client is not initialized. Check API key configuration."
+    # Get model ID and region from config or environment variables
+    model_id = config.aws_bedrock_model or os.environ.get("AWS_BEDROCK_MODEL")
+    region = config.aws_region or os.environ.get("AWS_REGION")
+
+    # Validate that required configuration is available
+    if not model_id:
+        error_msg = "AWS Bedrock model ID is not specified. Check configuration or AWS_BEDROCK_MODEL environment variable."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+
+    if not region:
+        error_msg = "AWS region is not specified. Check configuration or AWS_REGION environment variable."
         logger.error(error_msg)
         raise RuntimeError(error_msg)
 
     # Define the API call function for retry
     def make_api_call():
         try:
-            logger.debug("Calling Anthropic API with model: claude-3-5-sonnet-latest")
-            return anthropic_client.messages.create(
-                model="claude-3-5-sonnet-latest",
-                max_tokens=8192,
-                temperature=0,
-                timeout=timeout,
-                system=CLAUDE_SYSTEM_PROMPT,
-                messages=[{"role": "user", "content": prompt}],
+            logger.debug("Calling AWS Bedrock with model: %s", model_id)
+
+            # Initialize the ChatBedrock model
+            model = ChatBedrock(
+                model_id=model_id,
+                region_name=region,
+                model_kwargs={"temperature": 0, "max_tokens": 8192},
             )
-        except AttributeError as e:
-            logger.error("Anthropic client attribute error: %s", str(e))
-            logger.error("Client type: %s", type(anthropic_client))
-            logger.error("Client attributes: %s", dir(anthropic_client))
-            raise
+
+            # Prepare messages
+            messages = [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": prompt},
+            ]
+
+            # Call the model - note: ChatBedrock does not support with_timeout directly
+            # Use standard invoke method instead
+            result = model.invoke(messages)
+
+            # Return the content of the response
+            return result.content
+
         except Exception as e:
-            logger.error("Unexpected error during API call: %s", str(e))
+            logger.error("Unexpected error during Bedrock API call: %s", str(e))
             raise
 
     # Make the API call with retry
     start_time = time.time()
     response = operation_with_retry(
-        make_api_call, "Anthropic API call failed, retrying", logger, 3
+        make_api_call, "AWS Bedrock API call failed, retrying", logger, 3
     )
     elapsed_time = time.time() - start_time
-    logger.info("Received response from Anthropic API in %.2f seconds", elapsed_time)
+    logger.info("Received response from AWS Bedrock in %.2f seconds", elapsed_time)
 
     # Process the response
-    logger.info("Starting to parse Claude response...")
-
-    # Extract and process the response content
-    content = response.content
-    logger.debug("Raw response content type: %s", type(content))
-
-    # Extract the text content
-    text_content = extract_text_from_response(content, logger)
+    logger.info("Starting to parse Bedrock response...")
 
     # Parse JSON and extract chunks
-    return parse_chunks_from_response(text_content, logger)
-
-
-def extract_text_from_response(content: Any, logger: logging.Logger) -> str:
-    """Extract text content from Claude API response.
-
-    Args:
-        content: Response content from Claude API
-        logger: Logger instance for logging
-
-    Returns:
-        Text content as string
-
-    Raises:
-        ValueError: If content format is unexpected
-    """
-    # Handle list-type content
-    if isinstance(content, list):
-        logger.debug("Response content is a list, taking first element")
-        if not content:
-            error_msg = "Empty response list from Claude"
-            raise ValueError(error_msg)
-        content = content[0]
-
-    # Extract text based on content type
-    if hasattr(content, "text"):
-        logger.debug("Found text attribute in response")
-        return content.text
-    if isinstance(content, (dict, list)):
-        logger.debug("Response is already parsed JSON")
-        return json.dumps(content)
-    if isinstance(content, str):
-        logger.debug("Response is raw text")
-        return content
-    error_msg = f"Unexpected response type: {type(content)}"
-    raise ValueError(error_msg)
+    return parse_chunks_from_response(response, logger)
 
 
 def parse_chunks_from_response(

@@ -12,7 +12,7 @@ from app.code_analysis.agents.nodes.code_chunker.chunking.chunk_processor import
     process_chunk,
 )
 from app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration import (
-    get_chunks_from_claude,
+    get_chunks_from_bedrock,
 )
 from app.code_analysis.agents.nodes.code_chunker.models.code_chunk import CodeChunk
 from app.code_analysis.agents.nodes.code_chunker.utils.logging_utils import PromptLogger
@@ -49,7 +49,7 @@ class TestChunkManager:
     def chunk_manager(self, mock_anthropic_client, mock_logger, mock_prompt_logger):
         """Create a test chunk manager instance."""
         return ChunkManager(
-            anthropic_client=mock_anthropic_client,
+            bedrock_config=mock_anthropic_client,
             api_timeout=30,
             logger=mock_logger,
             prompt_logger=mock_prompt_logger,
@@ -113,7 +113,7 @@ class TestChunkManager:
                         mock_create_prompt.return_value = "test prompt"
 
                         with patch(
-                            "app.code_analysis.agents.nodes.code_chunker.chunking.chunk_manager.get_chunks_from_claude"
+                            "app.code_analysis.agents.nodes.code_chunker.chunking.chunk_manager.get_chunks_from_bedrock"
                         ) as mock_get_chunks:
                             # Define expected chunks data from Claude
                             expected_chunks_data = [
@@ -228,8 +228,15 @@ class TestChunkManager:
     @patch(
         "app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration.json.loads"
     )
+    @patch(
+        "app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration.ChatBedrock"
+    )
     def test_get_chunks_from_claude(
-        self, mock_json_loads, chunk_manager, mock_anthropic_client
+        self,
+        mock_chatbedrock_class,
+        mock_json_loads,
+        chunk_manager,
+        mock_anthropic_client,
     ):
         """Test getting chunks from Claude."""
         # Configure the mock
@@ -242,6 +249,13 @@ class TestChunkManager:
             }
         ]
 
+        # Set up ChatBedrock mock
+        mock_chatbedrock_instance = MagicMock()
+        mock_chatbedrock_instance.invoke.return_value = MagicMock(
+            content="test response content"
+        )
+        mock_chatbedrock_class.return_value = mock_chatbedrock_instance
+
         # Mock operation_with_retry to call the actual function
         def mock_operation_with_retry(
             operation, _error_msg, _logger, _max_retries=3, *args, **kwargs
@@ -252,10 +266,9 @@ class TestChunkManager:
             return operation(*args, **kwargs)
 
         # Call the function
-        result = get_chunks_from_claude(
+        result = get_chunks_from_bedrock(
             "test prompt",
             mock_anthropic_client,
-            30,
             chunk_manager.logger,
             mock_operation_with_retry,
         )
@@ -265,13 +278,10 @@ class TestChunkManager:
         assert result[0]["chunk_id"] == "chunk1"
         assert result[0]["description"] == "Test Chunk"
 
-        # Verify Claude API was called correctly
-        mock_anthropic_client.messages.create.assert_called_once()
-        call_args = mock_anthropic_client.messages.create.call_args[1]
-        assert call_args["model"].startswith("claude-")
-        assert call_args["max_tokens"] > 1000
-        assert call_args["messages"][0]["role"] == "user"
-        assert call_args["messages"][0]["content"] == "test prompt"
+        # Verify ChatBedrock was initialized correctly
+        mock_chatbedrock_class.assert_called_once()
+        # Verify invoke was called on the ChatBedrock instance
+        mock_chatbedrock_instance.invoke.assert_called_once()
 
 
 def test_expand_glob_patterns():

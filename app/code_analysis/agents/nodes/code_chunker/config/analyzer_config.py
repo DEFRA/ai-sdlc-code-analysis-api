@@ -9,10 +9,11 @@ class AnalyzerConfig:
 
     Args:
         repo_path_or_url: Local path or URL to the repository
-        anthropic_api_key: API key for Anthropic
-        log_prompts: Whether to log prompts sent to Anthropic
+        aws_bedrock_model: AWS Bedrock model ID
+        aws_region: AWS region for Bedrock
+        log_prompts: Whether to log prompts sent to LLM
         log_file_path: Path to the log file
-        log_responses: Whether to log responses from Anthropic
+        log_responses: Whether to log responses from LLM
         api_timeout: Timeout in seconds for API calls
         log_level: Logging level to use
         max_files_to_parse: Maximum number of files to parse
@@ -24,7 +25,8 @@ class AnalyzerConfig:
     repo_path_or_url: str
 
     # API settings
-    anthropic_api_key: Optional[str] = None
+    aws_bedrock_model: Optional[str] = None
+    aws_region: Optional[str] = None
     api_timeout: int = 120
 
     # Logging settings
@@ -46,4 +48,4 @@ class AnalyzerConfig:
 
         # Set default log file path if logging is enabled but no path is provided
         if (self.log_prompts or self.log_responses) and not self.log_file_path:
-            self.log_file_path = "anthropic_prompts.log"
+            self.log_file_path = "bedrock_prompts.log"

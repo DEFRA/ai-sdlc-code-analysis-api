@@ -1,13 +1,11 @@
 import logging
-from typing import Any, Callable, Optional
-
-from anthropic import Anthropic
+from typing import Any, Callable
 
 from app.code_analysis.agents.nodes.code_chunker.models.code_chunk import CodeChunk
 from app.code_analysis.agents.nodes.code_chunker.utils.logging_utils import PromptLogger
 
 from .chunk_processor import process_chunk
-from .claude_integration import create_chunking_prompt, get_chunks_from_claude
+from .claude_integration import create_chunking_prompt, get_chunks_from_bedrock
 
 
 class ChunkManager:
@@ -15,7 +13,7 @@ class ChunkManager:
 
     def __init__(
         self,
-        anthropic_client: Optional[Anthropic],
+        bedrock_config: Any,
         api_timeout: int,
         logger: logging.Logger,
         prompt_logger: PromptLogger,
@@ -24,13 +22,13 @@ class ChunkManager:
         """Initialize the chunk manager.
 
         Args:
-            anthropic_client: Anthropic client for API calls
+            bedrock_config: Configuration with AWS Bedrock settings
             api_timeout: Timeout for API calls in seconds
             logger: Logger instance
             prompt_logger: Logger for prompts and responses
             filter_comments_above_tokens: Threshold for filtering comments
         """
-        self.anthropic_client = anthropic_client
+        self.bedrock_config = bedrock_config
         self.api_timeout = api_timeout
         self.logger = logger
         self.prompt_logger = prompt_logger
@@ -60,17 +58,16 @@ class ChunkManager:
             RuntimeError: If chunking fails
         """
         try:
-            # Create the prompt for Claude using the provided directory structure
+            # Create the prompt for the LLM using the provided directory structure
             prompt = create_chunking_prompt(directory_structure, simplified_structure)
 
             # Log the prompt if enabled
             self.prompt_logger.log_prompt(prompt)
 
-            # Get chunks from Claude
-            chunks_data = get_chunks_from_claude(
+            # Get chunks from AWS Bedrock
+            chunks_data = get_chunks_from_bedrock(
                 prompt,
-                self.anthropic_client,
-                self.api_timeout,
+                self.bedrock_config,
                 self.logger,
                 operation_with_retry,
             )
@@ -98,6 +95,6 @@ class ChunkManager:
             return chunks
 
         except Exception as e:
-            self.logger.error("Failed to chunk codebase with Claude: %s", e)
+            self.logger.error("Failed to chunk codebase with AWS Bedrock: %s", e)
             error_msg = f"Failed to chunk codebase: {e}"
             raise RuntimeError(error_msg) from e
