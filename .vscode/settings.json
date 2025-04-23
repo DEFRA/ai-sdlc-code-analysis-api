@@ -15,113 +15,80 @@
       "codebase": {
         "fileAssociations": [
           {
-            "pattern": "test_*.py",
-            "rules": ["FastAPI Testing"]
-          },
-          {
             "pattern": "**/*.py",
+            "rules": ["Python Project", "Python Code Style"]
+          },
+          {
+            "pattern": "test_*.py",
+            "rules": ["FastAPI Testing", "MongoDB Mocking"]
+          },
+          {
+            "pattern": "app/code_analysis/agents/**/*.py",
             "rules": [
-              "Python Type Hints", 
-              "Code Organization",
-              "Logging"
+              "LangGraph Type Safety",
+              "LangGraph Tool Use",
+              "LangGraph State Management",
+              "LangGraph Project Structure",
+              "LangGraph Nodes and Edges",
+              "LangGraph Model Integration",
+              "LangGraph Memory Management",
+              "LangGraph Logging",
+              "LangGraph Async Patterns"
             ]
-          },
-          {
-            "pattern": "app/api/**/*.py",
-            "rules": [
-              "API Error Handling",
-              "API Documentation", 
-              "Validation",
-              "Security Best Practices",
-              "Versioning",
-              "Rate Limiting"
-            ]
-          },
-          {
-            "pattern": "app/services/**/*.py",
-            "rules": [
-              "Dependency Injection",
-              "Async Best Practices",
-              "Performance Optimization"
-            ]
-          },
-          {
-            "pattern": "app/db/**/*.py",
-            "rules": ["Database Access"]
-          },
-          {
-            "pattern": "app/config/**/*.py",
-            "rules": ["Configuration Management"]
-          },
-          {
-            "pattern": "app/errors/**/*.py",
-            "rules": ["Error Codes"]
           }
         ],
         "inlineFiles": [
+          {
+            "name": "Python Project",
+            "content": "${workspaceFolder}/rules/python-project.md"
+          },
           {
             "name": "FastAPI Testing",
             "content": "${workspaceFolder}/rules/fastapi-testing.md"
           },
           {
-            "name": "API Error Handling",
-            "content": "${workspaceFolder}/rules/api-error-handling.md"
+            "name": "Python Code Style",
+            "content": "${workspaceFolder}/rules/python-code-style.md"
           },
           {
-            "name": "Python Type Hints",
-            "content": "${workspaceFolder}/rules/python-type-hints.md"
+            "name": "MongoDB Mocking",
+            "content": "${workspaceFolder}/rules/mongodb_mocking.md"
           },
           {
-            "name": "Dependency Injection",
-            "content": "${workspaceFolder}/rules/dependency-injection.md"
+            "name": "LangGraph Type Safety",
+            "content": "${workspaceFolder}/rules/langgraph-type-safety.md"
           },
           {
-            "name": "API Documentation",
-            "content": "${workspaceFolder}/rules/api-documentation.md"
+            "name": "LangGraph Tool Use",
+            "content": "${workspaceFolder}/rules/langgraph-tool-use.md"
           },
           {
-            "name": "Security Best Practices",
-            "content": "${workspaceFolder}/rules/security-best-practices.md"
+            "name": "LangGraph State Management",
+            "content": "${workspaceFolder}/rules/langgraph-state-management.md"
           },
           {
-            "name": "Code Organization",
-            "content": "${workspaceFolder}/rules/code-organization.md"
+            "name": "LangGraph Project Structure",
+            "content": "${workspaceFolder}/rules/langgraph-project-structure.md"
           },
           {
-            "name": "Async Best Practices",
-            "content": "${workspaceFolder}/rules/async-best-practices.md"
+            "name": "LangGraph Nodes and Edges",
+            "content": "${workspaceFolder}/rules/langgraph-nodes-edges.md"
           },
           {
-            "name": "Validation",
-            "content": "${workspaceFolder}/rules/validation.md"
+            "name": "LangGraph Model Integration",
+            "content": "${workspaceFolder}/rules/langgraph-model-integration.md"
           },
           {
-            "name": "Performance Optimization",
-            "content": "${workspaceFolder}/rules/performance-optimization.md"
+            "name": "LangGraph Memory Management",
+            "content": "${workspaceFolder}/rules/langgraph-memory-management.md"
           },
           {
-            "name": "Logging",
-            "content": "${workspaceFolder}/rules/logging.md"
+            "name": "LangGraph Logging",
+            "content": "${workspaceFolder}/rules/langgraph-logging.md"
           },
           {
-            "name": "Database Access",
-            "content": "${workspaceFolder}/rules/database-access.md"
-          },
-          {
-            "name": "Configuration Management",
-            "content": "${workspaceFolder}/rules/configuration-management.md"
-          },
-          {
-            "name": "Error Codes",
-            "content": "${workspaceFolder}/rules/error-codes.md"
-          },
-          {
-            "name": "Versioning",
-            "content": "${workspaceFolder}/rules/versioning.md"
-          },
-          {
-            "name": "Rate Limiting",
-            "content": "${workspaceFolder}/rules/rate-limiting.md"
+            "name": "LangGraph Async Patterns",
+            "content": "${workspaceFolder}/rules/langgraph-async-patterns.md"
           }
         ]
       }
