@@ -47,11 +47,11 @@ Code chunks:
 </context>
 
 Your report should be titled "Interfaces Report" and should include the following sections:
-   - User interfaces (UI)
-   - API endpoints with request/response formats
-   - Batch processing interfaces
-   - Event-driven interfaces (e.g., message queues)
-   - Any other interfaces exposed by the code
+- User interfaces (UI)
+- API endpoints with request/response formats
+- Batch processing interfaces
+- Event-driven interfaces (e.g., message queues)
+- Any other interfaces exposed by the code
 
 Ensure to only include external interfaces and exclude any internal interface details.
 

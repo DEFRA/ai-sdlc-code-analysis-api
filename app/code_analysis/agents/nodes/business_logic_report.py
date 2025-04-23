@@ -47,12 +47,11 @@ Code chunks:
 </context>
 
 Your report should be titled "Business Logic Report" and should include the following sections:
-   - Core business rules and domain logic
-   - Business process flows
-   - Business rules
-   - Separation of concerns between business logic and other layers
-   - Domain-driven design patterns
-   - Set to null if no significant business logic exists
+- Core business rules and domain logic
+- Business process flows
+- Business rules
+- Separation of concerns between business logic and other layers
+- Domain-driven design patterns
 
 Ensure there are no duplicates or redundancy in the single report."""
 

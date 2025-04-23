@@ -69,6 +69,7 @@ Your analysis must return ONLY a valid JSON object with these fields:
    - API calls or external services
    - Database connections and ORM usage
    - Third-party integrations
+   - Any other external dependencies
    - Versioning and compatibility considerations
    - Set to null if no dependencies exist
 

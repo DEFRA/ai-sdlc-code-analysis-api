@@ -48,11 +48,11 @@ Code chunks:
 </context>
 
 Your report should be titled "Data Model Report" and should include the following sections:
-   - Logical data models and entities
-   - Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
-   - Detailed breakdown of each model's fields, types, and relationships
-   - Data flow and transformations
-   - Data validation and integrity checks
+- Logical data models and entities
+- Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
+- Detailed breakdown of each model's fields, types, and relationships
+- Data flow and transformations
+- Data validation and integrity checks
 
 Ensure there are no duplicates or redundancy in the single report."""
 
