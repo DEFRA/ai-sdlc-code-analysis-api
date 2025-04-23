@@ -18,13 +18,13 @@ from app.code_analysis.models.report_section import ReportSection
 def full_report_sections():
     """Fixture providing ReportSection with all sections populated."""
     return ReportSection(
-        data_model="# Data Model Report\n\nThis is the data model report content. ## Data Model SubHeading\n\nThis is a subheading.",
-        interfaces="# Interfaces Report\n\nThis is the interfaces report content. ## Interfaces SubHeading\n\nThis is a subheading.",
-        business_logic="# Business Logic Report\n\nThis is the business logic report content. ## Business Logic SubHeading\n\nThis is a subheading.",
-        dependencies="# Dependencies Report\n\nThis is the dependencies report content. ## Dependencies SubHeading\n\nThis is a subheading.",
-        configuration="# Configuration Report\n\nThis is the configuration report content. ## Configuration SubHeading\n\nThis is a subheading.",
-        infrastructure="# Infrastructure Report\n\nThis is the infrastructure report content. ## Infrastructure SubHeading\n\nThis is a subheading.",
-        non_functional="# Non-Functional Aspects Report\n\nThis is the non-functional report content. ## Non-Functional SubHeading\n\nThis is a subheading.",
+        data_model="# Data Model Report\n\nThis is the data model report content. \n## Data Model SubHeading\n\nThis is a subheading.",
+        interfaces="# Interfaces Report\n\nThis is the interfaces report content. \n## Interfaces SubHeading\n\nThis is a subheading.",
+        business_logic="# Business Logic Report\n\nThis is the business logic report content. \n## Business Logic SubHeading\n\nThis is a subheading.",
+        dependencies="# Dependencies Report\n\nThis is the dependencies report content. \n## Dependencies SubHeading\n\nThis is a subheading.",
+        configuration="# Configuration Report\n\nThis is the configuration report content. \n## Configuration SubHeading\n\nThis is a subheading.",
+        infrastructure="# Infrastructure Report\n\nThis is the infrastructure report content. \n## Infrastructure SubHeading\n\nThis is a subheading.",
+        non_functional="# Non-Functional Aspects Report\n\nThis is the non-functional report content. \n## Non-Functional SubHeading\n\nThis is a subheading.",
     )
 
 
@@ -32,12 +32,12 @@ def full_report_sections():
 def partial_report_sections():
     """Fixture providing ReportSection with only some sections populated."""
     return ReportSection(
-        data_model="# Data Model Report\n\nThis is the data model report content. ## Data Model SubHeading\n\nThis is a subheading.",
+        data_model="# Data Model Report\n\nThis is the data model report content. \n## Data Model SubHeading\n\nThis is a subheading.",
         interfaces=None,
-        business_logic="# Business Logic Report\n\nThis is the business logic report content. ## Business Logic SubHeading\n\nThis is a subheading.",
+        business_logic="# Business Logic Report\n\nThis is the business logic report content. \n## Business Logic SubHeading\n\nThis is a subheading.",
         dependencies=None,
         configuration=None,
-        infrastructure="# Infrastructure Report\n\nThis is the infrastructure report content. ## Infrastructure SubHeading\n\nThis is a subheading.",
+        infrastructure="# Infrastructure Report\n\nThis is the infrastructure report content. \n## Infrastructure SubHeading\n\nThis is a subheading.",
         non_functional=None,
     )
 
@@ -82,20 +82,20 @@ async def test_generate_consolidated_report_with_all_sections(full_report_sectio
     )
 
     # Verify all report sections are included
-    assert "# Data Model Report" in result_state.consolidated_report
-    assert "## Data Model SubHeading" in result_state.consolidated_report
-    assert "# Interfaces Report" in result_state.consolidated_report
-    assert "## Interfaces SubHeading" in result_state.consolidated_report
-    assert "# Business Logic Report" in result_state.consolidated_report
-    assert "## Business Logic SubHeading" in result_state.consolidated_report
-    assert "# Dependencies Report" in result_state.consolidated_report
-    assert "## Dependencies SubHeading" in result_state.consolidated_report
-    assert "# Configuration Report" in result_state.consolidated_report
-    assert "## Configuration SubHeading" in result_state.consolidated_report
-    assert "# Infrastructure Report" in result_state.consolidated_report
-    assert "## Infrastructure SubHeading" in result_state.consolidated_report
-    assert "# Non-Functional Aspects Report" in result_state.consolidated_report
-    assert "## Non-Functional SubHeading" in result_state.consolidated_report
+    assert "## 1. Data Model Report" in result_state.consolidated_report
+    assert "### 1.1. Data Model SubHeading" in result_state.consolidated_report
+    assert "## 2. Interfaces Report" in result_state.consolidated_report
+    assert "### 2.1. Interfaces SubHeading" in result_state.consolidated_report
+    assert "## 3. Business Logic Report" in result_state.consolidated_report
+    assert "### 3.1. Business Logic SubHeading" in result_state.consolidated_report
+    assert "## 4. Dependencies Report" in result_state.consolidated_report
+    assert "### 4.1. Dependencies SubHeading" in result_state.consolidated_report
+    assert "## 5. Configuration Report" in result_state.consolidated_report
+    assert "### 5.1. Configuration SubHeading" in result_state.consolidated_report
+    assert "## 6. Infrastructure Report" in result_state.consolidated_report
+    assert "### 6.1. Infrastructure SubHeading" in result_state.consolidated_report
+    assert "## 7. Non-Functional Aspects Report" in result_state.consolidated_report
+    assert "### 7.1. Non-Functional SubHeading" in result_state.consolidated_report
 
 
 @pytest.mark.asyncio
@@ -126,16 +126,16 @@ async def test_generate_consolidated_report_with_partial_sections(
     assert result_state.consolidated_report is not None
     assert "# Code Analysis Report" in result_state.consolidated_report
 
-    # Verify populated sections are included
-    assert "# Data Model Report" in result_state.consolidated_report
-    assert "# Business Logic Report" in result_state.consolidated_report
-    assert "# Infrastructure Report" in result_state.consolidated_report
+    # Verify populated sections are included with their transformed headings
+    assert "## 1. Data Model Report" in result_state.consolidated_report
+    assert "## 2. Business Logic Report" in result_state.consolidated_report
+    assert "## 3. Infrastructure Report" in result_state.consolidated_report
 
     # Verify unpopulated sections are not included
-    assert "# Interfaces Report" not in result_state.consolidated_report
-    assert "# Dependencies Report" not in result_state.consolidated_report
-    assert "# Configuration Report" not in result_state.consolidated_report
-    assert "# Non-Functional Aspects Report" not in result_state.consolidated_report
+    assert "Interfaces Report" not in result_state.consolidated_report
+    assert "Dependencies Report" not in result_state.consolidated_report
+    assert "Configuration Report" not in result_state.consolidated_report
+    assert "Non-Functional Aspects Report" not in result_state.consolidated_report
 
 
 @pytest.mark.asyncio
