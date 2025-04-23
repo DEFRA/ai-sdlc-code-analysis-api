@@ -229,11 +229,15 @@ class TestChunkManager:
         "app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration.json.loads"
     )
     @patch(
+        "app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration.boto3.client"
+    )
+    @patch(
         "app.code_analysis.agents.nodes.code_chunker.chunking.claude_integration.ChatBedrock"
     )
     def test_get_chunks_from_claude(
         self,
         mock_chatbedrock_class,
+        mock_boto3_client,
         mock_json_loads,
         chunk_manager,
         mock_anthropic_client,
@@ -255,6 +259,15 @@ class TestChunkManager:
             content="test response content"
         )
         mock_chatbedrock_class.return_value = mock_chatbedrock_instance
+
+        # Mock the boto3 client to prevent it from actually being created
+        mock_boto3_client.return_value = MagicMock()
+
+        # Configure mock_anthropic_client with string attributes needed by boto3
+        mock_anthropic_client.aws_bedrock_model = (
+            "anthropic.claude-3-5-sonnet-20240620-v1:0"
+        )
+        mock_anthropic_client.aws_region = "eu-west-2"
 
         # Mock operation_with_retry to call the actual function
         def mock_operation_with_retry(

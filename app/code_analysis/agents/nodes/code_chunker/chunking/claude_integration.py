@@ -6,6 +6,8 @@ import os
 import time
 from typing import Any, Callable
 
+import boto3
+from botocore.config import Config
 from langchain_aws import ChatBedrock
 
 # System prompt used for all LLM API calls
@@ -125,10 +127,22 @@ def get_chunks_from_bedrock(
         try:
             logger.debug("Calling AWS Bedrock with model: %s", model_id)
 
-            # Initialize the ChatBedrock model
+            # Configure boto3 with extended timeouts
+            boto_config = Config(
+                connect_timeout=60,  # Connection timeout in seconds
+                read_timeout=300,  # Read timeout in seconds (5 minutes)
+                retries={"max_attempts": 3},
+            )
+
+            # Create the boto3 bedrock-runtime client with extended timeout configuration
+            bedrock_client = boto3.client(
+                "bedrock-runtime", region_name=region, config=boto_config
+            )
+
+            # Initialize the ChatBedrock model with custom client
             model = ChatBedrock(
                 model_id=model_id,
-                region_name=region,
+                client=bedrock_client,
                 model_kwargs={"temperature": 0, "max_tokens": 8192},
             )
 
@@ -138,8 +152,7 @@ def get_chunks_from_bedrock(
                 {"role": "user", "content": prompt},
             ]
 
-            # Call the model - note: ChatBedrock does not support with_timeout directly
-            # Use standard invoke method instead
+            # Call the model
             result = model.invoke(messages)
 
             # Return the content of the response

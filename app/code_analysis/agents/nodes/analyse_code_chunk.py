@@ -2,7 +2,9 @@ import json
 import os
 from logging import getLogger
 
+import boto3
 import tiktoken
+from botocore.config import Config
 from langchain_aws import ChatBedrock
 
 from app.code_analysis.agents.states.code_chuck_analysis import CodeChunkAnalysisState
@@ -16,10 +18,26 @@ def analyse_code_chunk(state: CodeChunkAnalysisState) -> CodeChunkAnalysisState:
 
     logger.info("Analyzing code chunk %s", state.code_chunk.chunk_id)
 
-    # Initialize the Claude model using Bedrock
+    # Create a boto3 client with extended timeout configuration
+    region = os.environ.get("AWS_REGION")
+    model_id = os.environ.get("AWS_BEDROCK_MODEL")
+
+    # Configure boto3 with extended timeouts
+    boto_config = Config(
+        connect_timeout=60,  # Connection timeout in seconds
+        read_timeout=300,  # Read timeout in seconds (5 minutes)
+        retries={"max_attempts": 3},
+    )
+
+    # Create the boto3 bedrock-runtime client with the extended timeout configuration
+    bedrock_client = boto3.client(
+        "bedrock-runtime", region_name=region, config=boto_config
+    )
+
+    # Initialize the Claude model using Bedrock with custom client
     model = ChatBedrock(
-        model_id=os.environ.get("AWS_BEDROCK_MODEL"),
-        region_name=os.environ.get("AWS_REGION"),
+        model_id=model_id,
+        client=bedrock_client,
         model_kwargs={"temperature": 0, "max_tokens": 8192},
     )
 
