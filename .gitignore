@@ -178,5 +178,6 @@ compose/secrets.env
 .cursor/.DS_Store
 
 # Application specific files
-scripts/run_langgraph_nodes/data/results/*
-scripts/run_langgraph_nodes/data/results/analyze_code_chunk_result.json
+scripts/run_langgraph_nodes/data/results/*.json
+scripts/run_langgraph_nodes/data/setup/analyzed_code_chunks.json
+scripts/run_langgraph_nodes/data/setup/code_chunk.json
