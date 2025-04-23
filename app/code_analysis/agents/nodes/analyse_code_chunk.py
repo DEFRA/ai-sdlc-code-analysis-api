@@ -81,14 +81,19 @@ Your analysis must return ONLY a valid JSON object with these fields:
    - Set to null if no configuration exists
 
 7. infrastructure (string): If applicable, include:
-   - Infrastructure as code (IaC) elements (e.g., Terraform, CloudFormation)
-   - Deployment requirements and environment needs
-   - Resource requirements and scaling considerations
+   - Deployment configuration and infrastructure as code (IaC)
+   - Deployment and environment setup
+   - Cloud services integration
+   - Containerization and orchestration
+   - CI/CD pipeline setup
    - Set to null if no infrastructure elements exist
 
 8. non_functional (string): If applicable, include:
-   - Performance, security, and reliability aspects
-   - Error handling, logging, monitoring, and alerting
+   - Performance and reliability aspects
+   - Security considerations
+   - Volume and load considerations
+   - Significant error handling and recovery mechanisms
+   - Logging, monitoring, and alerting
    - Compliance considerations
    - Data and privacy considerations
    - Set to null if no non-functional elements exist
