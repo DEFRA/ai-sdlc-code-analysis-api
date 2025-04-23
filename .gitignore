@@ -176,3 +176,7 @@ compose/secrets.env
 # VSCode settings
 .vscode/
 .cursor/.DS_Store
+
+# Application specific files
+scripts/run_langgraph_nodes/data/results/*
+scripts/run_langgraph_nodes/data/results/analyze_code_chunk_result.json
