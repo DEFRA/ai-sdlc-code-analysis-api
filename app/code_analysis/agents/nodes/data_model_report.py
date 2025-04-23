@@ -37,28 +37,27 @@ async def generate_data_model_report(state: CodeAnalysisState) -> CodeAnalysisSt
 
         # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the data model aspects of the codebase.
-        The Context contains code from multiple code chunks, and you should combine them into a single report. Ensure there is no duplicate or redundant code in the final report.
+        The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
 
-Context:
+Code chunks:
 {data_model_context}
+</context>
 
-Your report should include the following sections:
+Your report should be titled "Data Model Report" and should include the following sections:
    - Logical data models and entities
    - Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
    - Detailed breakdown of each model's fields, types, and relationships
    - Data flow and transformations
    - Data validation and integrity checks
 
-Ensure there are no duplicates or redundancy in the final report.
+Ensure there are no duplicates or redundancy in the single report.
 """
 
-        report = generate_report(system_prompt, user_prompt)
-
-    # Create the formatted report section
-    formatted_report = f"# Data Model Report\n\n{report}"
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Data model report generated")
 
@@ -69,7 +68,7 @@ Ensure there are no duplicates or redundancy in the final report.
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"data_model": formatted_report}
+        update={"data_model": report}
     )
 
     # More debugging
