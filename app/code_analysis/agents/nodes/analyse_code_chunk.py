@@ -57,8 +57,11 @@ Your analysis must return ONLY a valid JSON object with these fields:
    - Set to null if no interfaces are defined
 
 4. business_logic (string): If applicable, include:
-   - Algorithms and processing workflows
-   - Business rules, validations, and conditional logic
+   - Core business rules and domain logic
+   - Business process flows
+   - Business rules
+   - Separation of concerns between business logic and other layers
+   - Domain-driven design patterns
    - Set to null if no significant business logic exists
 
 5. dependencies (string): If applicable, include:
