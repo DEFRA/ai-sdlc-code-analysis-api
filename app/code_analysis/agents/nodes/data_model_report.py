@@ -33,22 +33,11 @@ async def generate_data_model_report(state: CodeAnalysisState) -> CodeAnalysisSt
         report = "No data model information found in the analyzed code chunks."
     else:
         # Define system prompt for data model analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the data model aspects of the codebase.
-
-Focus on:
-- Entity relationships and data structures
-- Database schema design (if applicable)
-- Data validation and integrity mechanisms
-- ORM or data access patterns
-- Strengths and potential improvements in the data model
-- Best practices implemented or missing
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the data model aspects of the codebase. Format your report in markdown format with clear sections"""
 
         # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the data model aspects of the codebase.
+        The Context contains code from multiple code chunks, and you should combine them into a single report. Ensure there is no duplicate or redundant code in the final report.
 
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
@@ -56,7 +45,15 @@ Languages used: {", ".join(state.languages_used)}
 Context:
 {data_model_context}
 
-Provide a complete, standalone report section focusing only on data models, entities, and data structures."""
+Your report should include the following sections:
+   - Logical data models and entities
+   - Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
+   - Detailed breakdown of each model's fields, types, and relationships
+   - Data flow and transformations
+   - Data validation and integrity checks
+
+Ensure there are no duplicates or redundancy in the final report.
+"""
 
         report = generate_report(system_prompt, user_prompt)
 
