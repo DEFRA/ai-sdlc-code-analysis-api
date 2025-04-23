@@ -33,41 +33,35 @@ async def generate_business_logic_report(state: CodeAnalysisState) -> CodeAnalys
         report = "No business logic information found in the analyzed code chunks."
     else:
         # Define system prompt for business logic analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the business logic aspects of the codebase.
-
-Focus on:
-- Core business rules and domain logic
-- Service layer implementations
-- Business process flows
-- Implementation of business requirements
-- Separation of concerns between business logic and other layers
-- Domain-driven design patterns (if applicable)
-- Code organization around business concepts
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the business logic aspects of the codebase. Format your report in markdown format with clear sections"""
 
         # Define user prompt with business logic context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the business logic aspects of the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
-
-Context:
+Code chunks:
 {business_logic_context}
+</context>
 
-Provide a complete, standalone report section focusing only on business logic, rules, and domain-specific implementations."""
+Your report should be titled "Business Logic Report" and should include the following sections:
+   - Core business rules and domain logic
+   - Business process flows
+   - Business rules
+   - Separation of concerns between business logic and other layers
+   - Domain-driven design patterns
+   - Set to null if no significant business logic exists
 
-        report = generate_report(system_prompt, user_prompt)
+Ensure there are no duplicates or redundancy in the single report."""
 
-    # Create the formatted report section
-    formatted_report = f"# Business Logic Report\n\n{report}"
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Business logic report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"business_logic": formatted_report}
+        update={"business_logic": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})

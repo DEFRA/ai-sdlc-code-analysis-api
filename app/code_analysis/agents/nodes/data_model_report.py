@@ -37,7 +37,7 @@ async def generate_data_model_report(state: CodeAnalysisState) -> CodeAnalysisSt
 
         # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the data model aspects of the codebase.
-        The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
 <context>
 Repository URL: {state.repo_url}
@@ -54,8 +54,7 @@ Your report should be titled "Data Model Report" and should include the followin
    - Data flow and transformations
    - Data validation and integrity checks
 
-Ensure there are no duplicates or redundancy in the single report.
-"""
+Ensure there are no duplicates or redundancy in the single report."""
 
     report = generate_report(system_prompt, user_prompt)
 

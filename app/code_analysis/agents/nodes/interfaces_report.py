@@ -37,6 +37,7 @@ async def generate_interfaces_report(state: CodeAnalysisState) -> CodeAnalysisSt
 
         # Define user prompt with interfaces context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the interfaces exposed by the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
 <context>
 Repository URL: {state.repo_url}
