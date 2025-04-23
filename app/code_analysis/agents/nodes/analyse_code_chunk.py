@@ -90,12 +90,13 @@ Your analysis must return ONLY a valid JSON object with these fields:
 
 8. non_functional (string): If applicable, include:
    - Performance and reliability aspects
-   - Security considerations
+   - Security considerations and potential vulnerabilities
    - Volume and load considerations
    - Significant error handling and recovery mechanisms
    - Logging, monitoring, and alerting
    - Compliance considerations
    - Data and privacy considerations
+   - Testing strategies and code coverage
    - Set to null if no non-functional elements exist
 
 Include the chunk_id in your response JSON object. Your response must be a valid JSON object following EXACTLY this structure:

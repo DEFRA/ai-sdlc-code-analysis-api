@@ -33,42 +33,38 @@ async def generate_non_functional_report(state: CodeAnalysisState) -> CodeAnalys
         report = "No non-functional information found in the analyzed code chunks."
     else:
         # Define system prompt for non-functional analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the non-functional aspects of the codebase.
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the non-functional aspects of the codebase. Format your report in markdown format with clear sections"""
 
-Focus on:
-- Security implementations and potential vulnerabilities
-- Performance optimization techniques
-- Scalability approaches
-- Reliability and fault tolerance mechanisms
-- Maintainability and code quality
-- Testing strategies and code coverage
-- Accessibility considerations
-- Monitoring and observability
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
-
-        # Define user prompt with non-functional context
+        # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the non-functional aspects of the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
 
-Context:
+Code chunks:
 {non_functional_context}
+</context>
 
-Provide a complete, standalone report section focusing only on non-functional aspects like security, performance, scalability, and maintainability."""
+Your report should be titled "Non-Functional Aspects Report" and should include the following sections:
+- Performance and reliability aspects
+- Security considerations and potential vulnerabilities
+- Volume and load considerations
+- Significant error handling and recovery mechanisms
+- Logging, monitoring, and alerting
+- Compliance considerations
+- Data and privacy considerations
+- Testing strategies and code coverage
 
-        report = generate_report(system_prompt, user_prompt)
+Ensure there are no duplicates or redundancy in the single report."""
 
-    # Create the formatted report section
-    formatted_report = f"# Non-Functional Report\n\n{report}"
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Non-functional report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"non_functional": formatted_report}
+        update={"non_functional": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})
