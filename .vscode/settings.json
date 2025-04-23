@@ -13,6 +13,51 @@
   "github.copilot.advanced": {
     "rules": {
       "codebase": {
+        "fileAssociations": [
+          {
+            "pattern": "test_*.py",
+            "rules": ["FastAPI Testing"]
+          },
+          {
+            "pattern": "**/*.py",
+            "rules": [
+              "Python Type Hints", 
+              "Code Organization",
+              "Logging"
+            ]
+          },
+          {
+            "pattern": "app/api/**/*.py",
+            "rules": [
+              "API Error Handling",
+              "API Documentation", 
+              "Validation",
+              "Security Best Practices",
+              "Versioning",
+              "Rate Limiting"
+            ]
+          },
+          {
+            "pattern": "app/services/**/*.py",
+            "rules": [
+              "Dependency Injection",
+              "Async Best Practices",
+              "Performance Optimization"
+            ]
+          },
+          {
+            "pattern": "app/db/**/*.py",
+            "rules": ["Database Access"]
+          },
+          {
+            "pattern": "app/config/**/*.py",
+            "rules": ["Configuration Management"]
+          },
+          {
+            "pattern": "app/errors/**/*.py",
+            "rules": ["Error Codes"]
+          }
+        ],
         "inlineFiles": [
           {
             "name": "FastAPI Testing",
