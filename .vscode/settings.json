@@ -1,0 +1,85 @@
+{
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": true
+  },
+  "github.copilot.advanced": {
+    "rules": {
+      "codebase": {
+        "inlineFiles": [
+          {
+            "name": "FastAPI Testing",
+            "content": "${workspaceFolder}/rules/fastapi-testing.md"
+          },
+          {
+            "name": "API Error Handling",
+            "content": "${workspaceFolder}/rules/api-error-handling.md"
+          },
+          {
+            "name": "Python Type Hints",
+            "content": "${workspaceFolder}/rules/python-type-hints.md"
+          },
+          {
+            "name": "Dependency Injection",
+            "content": "${workspaceFolder}/rules/dependency-injection.md"
+          },
+          {
+            "name": "API Documentation",
+            "content": "${workspaceFolder}/rules/api-documentation.md"
+          },
+          {
+            "name": "Security Best Practices",
+            "content": "${workspaceFolder}/rules/security-best-practices.md"
+          },
+          {
+            "name": "Code Organization",
+            "content": "${workspaceFolder}/rules/code-organization.md"
+          },
+          {
+            "name": "Async Best Practices",
+            "content": "${workspaceFolder}/rules/async-best-practices.md"
+          },
+          {
+            "name": "Validation",
+            "content": "${workspaceFolder}/rules/validation.md"
+          },
+          {
+            "name": "Performance Optimization",
+            "content": "${workspaceFolder}/rules/performance-optimization.md"
+          },
+          {
+            "name": "Logging",
+            "content": "${workspaceFolder}/rules/logging.md"
+          },
+          {
+            "name": "Database Access",
+            "content": "${workspaceFolder}/rules/database-access.md"
+          },
+          {
+            "name": "Configuration Management",
+            "content": "${workspaceFolder}/rules/configuration-management.md"
+          },
+          {
+            "name": "Error Codes",
+            "content": "${workspaceFolder}/rules/error-codes.md"
+          },
+          {
+            "name": "Versioning",
+            "content": "${workspaceFolder}/rules/versioning.md"
+          },
+          {
+            "name": "Rate Limiting",
+            "content": "${workspaceFolder}/rules/rate-limiting.md"
+          }
+        ]
+      }
+    }
+  }
+}
