@@ -28,6 +28,15 @@ DEFAULT_EXCLUDE_FILES = [
     # Build outputs (any language)
     "yarn-error.log",
     "npm-debug.log",
+    # Mermaid files
+    "mermaid.min.js",
+    "mermaidAPI.min.js",
+    "mermaidAPI.js",
+    "mermaid.js",
+    "mermaid.css",
+    "mermaid.min.css",
+    "mermaidAPI.min.css",
+    "mermaidAPI.css",
 ]
 
 # Default directory patterns to exclude from analysis
