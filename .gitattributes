@@ -1,0 +1,2 @@
+# Exclude specific large files from pre-commit hooks
+scripts/run_langgraph_nodes/data/setup/examples/ai-sdlc-governance-api/response_1745427495146.json filter=lfs diff=lfs merge=lfs -text
