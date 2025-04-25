@@ -1,0 +1,97 @@
+{
+  "python.testing.pytestArgs": [
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true,
+  "github.copilot.enable": {
+    "*": true,
+    "plaintext": true,
+    "markdown": true,
+    "scminput": true
+  },
+  "github.copilot.advanced": {
+    "rules": {
+      "codebase": {
+        "fileAssociations": [
+          {
+            "pattern": "**/*.py",
+            "rules": ["Python Project", "Python Code Style"]
+          },
+          {
+            "pattern": "test_*.py",
+            "rules": ["FastAPI Testing", "MongoDB Mocking"]
+          },
+          {
+            "pattern": "app/code_analysis/agents/**/*.py",
+            "rules": [
+              "LangGraph Type Safety",
+              "LangGraph Tool Use",
+              "LangGraph State Management",
+              "LangGraph Project Structure",
+              "LangGraph Nodes and Edges",
+              "LangGraph Model Integration",
+              "LangGraph Memory Management",
+              "LangGraph Logging",
+              "LangGraph Async Patterns"
+            ]
+          }
+        ],
+        "inlineFiles": [
+          {
+            "name": "Python Project",
+            "content": "${workspaceFolder}/rules/python-project.md"
+          },
+          {
+            "name": "FastAPI Testing",
+            "content": "${workspaceFolder}/rules/fastapi-testing.md"
+          },
+          {
+            "name": "Python Code Style",
+            "content": "${workspaceFolder}/rules/python-code-style.md"
+          },
+          {
+            "name": "MongoDB Mocking",
+            "content": "${workspaceFolder}/rules/mongodb_mocking.md"
+          },
+          {
+            "name": "LangGraph Type Safety",
+            "content": "${workspaceFolder}/rules/langgraph-type-safety.md"
+          },
+          {
+            "name": "LangGraph Tool Use",
+            "content": "${workspaceFolder}/rules/langgraph-tool-use.md"
+          },
+          {
+            "name": "LangGraph State Management",
+            "content": "${workspaceFolder}/rules/langgraph-state-management.md"
+          },
+          {
+            "name": "LangGraph Project Structure",
+            "content": "${workspaceFolder}/rules/langgraph-project-structure.md"
+          },
+          {
+            "name": "LangGraph Nodes and Edges",
+            "content": "${workspaceFolder}/rules/langgraph-nodes-edges.md"
+          },
+          {
+            "name": "LangGraph Model Integration",
+            "content": "${workspaceFolder}/rules/langgraph-model-integration.md"
+          },
+          {
+            "name": "LangGraph Memory Management",
+            "content": "${workspaceFolder}/rules/langgraph-memory-management.md"
+          },
+          {
+            "name": "LangGraph Logging",
+            "content": "${workspaceFolder}/rules/langgraph-logging.md"
+          },
+          {
+            "name": "LangGraph Async Patterns",
+            "content": "${workspaceFolder}/rules/langgraph-async-patterns.md"
+          }
+        ]
+      }
+    }
+  }
+}
