@@ -174,16 +174,14 @@ cython_debug/
 compose/secrets.env
 
 # VSCode settings
-.vscode/
-.cursor/.DS_Store
+.vscode/*
+!.vscode/settings.json
+
+# Mac
+**/.DS_Store
 
 # Application specific files
 scripts/run_langgraph_nodes/data/results/*.json
 scripts/run_langgraph_nodes/data/setup/analyzed_code_chunks.json
 scripts/run_langgraph_nodes/data/setup/code_chunk.json
 scripts/run_langgraph_nodes/data/setup/report_sections.json
-.vscode/*
-!.vscode/settings.json
-
-# Mac
-**/.DS_Store
