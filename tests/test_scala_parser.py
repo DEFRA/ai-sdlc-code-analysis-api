@@ -103,11 +103,12 @@ object Main extends IOApp {
 def test_extract_imports(parser, sample_scala_code):
     """Test extraction of imports including Cats Effect imports."""
     imports = parser.extract_imports(sample_scala_code)
-    assert len(imports) == 4
+    assert len(imports) == 5
     assert "cats.effect.{IO, Resource}" in imports
     assert "cats.effect.std.Console" in imports
     assert "cats.syntax.all._" in imports
     assert "fs2.Stream" in imports
+    assert "scala.concurrent.duration._" in imports
 
 
 def test_extract_classes(parser, sample_scala_code):
@@ -145,7 +146,6 @@ def test_extract_for_comprehensions(parser, sample_scala_code):
     comprehensions = user_service["for_comprehensions"]
     assert len(comprehensions) > 0
 
-    # Check the getUser method's for comprehension
     comp = comprehensions[0]
     assert "logger.info" in comp["generators"]
     assert "users.get" in comp["generators"]
