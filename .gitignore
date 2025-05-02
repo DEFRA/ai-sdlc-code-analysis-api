@@ -179,3 +179,9 @@ compose/secrets.env
 
 # Mac
 **/.DS_Store
+
+# Application specific files
+scripts/run_langgraph_nodes/data/results/*.json
+scripts/run_langgraph_nodes/data/setup/analyzed_code_chunks.json
+scripts/run_langgraph_nodes/data/setup/code_chunk.json
+scripts/run_langgraph_nodes/data/setup/report_sections.json

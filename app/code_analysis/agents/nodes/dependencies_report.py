@@ -33,41 +33,38 @@ async def generate_dependencies_report(state: CodeAnalysisState) -> CodeAnalysis
         report = "No dependencies information found in the analyzed code chunks."
     else:
         # Define system prompt for dependencies analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the dependencies of the codebase.
+        # Define system prompt for data model analysis
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the dependencies aspects of the codebase. Format your report in markdown format with clear sections"""
 
-Focus on:
-- External libraries and frameworks used
-- Version management and compatibility
-- Security implications of dependencies
-- Dependency injection patterns
-- Module/package dependencies within the codebase
-- Potential dependency issues (circular dependencies, outdated versions)
-- Build and package management
+        # Define user prompt with data model context
+        user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the dependencies aspects of the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
-
-        # Define user prompt with dependencies context
-        user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the dependencies of the codebase.
-
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
 
-Context:
+Code chunks:
 {dependencies_context}
+</context>
 
-Provide a complete, standalone report section focusing only on dependencies, libraries, and external integrations."""
+Your report should be titled "Dependencies Report" and should include the following sections:
 
-        report = generate_report(system_prompt, user_prompt)
+- External dependencies (libraries, frameworks)
+- API calls or external services
+- Database connections and ORM usage
+- Third-party integrations
+- Any other external dependencies
+- Versioning and compatibility considerations
 
-    # Create the formatted report section
-    formatted_report = f"# Dependencies Report\n\n{report}"
+Ensure there are no duplicates or redundancy in the single report."""
+
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Dependencies report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"dependencies": formatted_report}
+        update={"dependencies": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})

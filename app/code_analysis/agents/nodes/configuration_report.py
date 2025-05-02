@@ -33,41 +33,34 @@ async def generate_configuration_report(state: CodeAnalysisState) -> CodeAnalysi
         report = "No configuration information found in the analyzed code chunks."
     else:
         # Define system prompt for configuration analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the configuration aspects of the codebase.
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the configuration aspects of the codebase. Format your report in markdown format with clear sections"""
 
-Focus on:
-- Configuration management approaches
-- Environment-specific settings
-- Configuration files and formats
-- Secret and credential management
-- Feature flags and toggles
-- Dynamic vs. static configuration
-- Configuration validation and error handling
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
-
-        # Define user prompt with configuration context
+        # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the configuration aspects of the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
 
-Context:
+Code chunks:
 {configuration_context}
+</context>
 
-Provide a complete, standalone report section focusing only on configuration management and settings."""
+Your report should be titled "Configuration Report" and should include the following sections:
+- Configuration files (e.g., YAML, JSON)
+- Configuration variables with defaults and valid options
+- Environment variables and config files
+- Secrets management and sensitive data handling
 
-        report = generate_report(system_prompt, user_prompt)
+Ensure there are no duplicates or redundancy in the single report."""
 
-    # Create the formatted report section
-    formatted_report = f"# Configuration Report\n\n{report}"
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Configuration report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"configuration": formatted_report}
+        update={"configuration": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})
