@@ -136,12 +136,12 @@ async def create_code_analysis_agent(thread_id: str, repo_url: str) -> None:
             )
             final_state = await asyncio.wait_for(
                 graph.ainvoke(initial_state, graph_config),
-                timeout=600,  # 10 minute timeout for the entire analysis
+                timeout=7200,  # 2 hour timeout for the entire analysis
             )
             logger.debug("Final state after graph execution: %s", final_state)
         except asyncio.TimeoutError:
             logger.error(
-                "Code analysis timed out after 10 minutes for thread %s", thread_id
+                "Code analysis timed out after 2 hours for thread %s", thread_id
             )
 
         logger.info("Agent execution completed for thread %s", thread_id)

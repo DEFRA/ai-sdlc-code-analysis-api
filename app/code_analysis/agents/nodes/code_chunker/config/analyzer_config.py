@@ -36,7 +36,7 @@ class AnalyzerConfig:
     log_level: int = logging.INFO
 
     # Analysis settings
-    max_files_to_parse: int = 1000
+    max_files_to_parse: int = 10000
     filter_comments_above_tokens: int = 200000
     use_tree_sitter: bool = True
 

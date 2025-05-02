@@ -2,7 +2,9 @@ import json
 import os
 from logging import getLogger
 
+import boto3
 import tiktoken
+from botocore.config import Config
 from langchain_aws import ChatBedrock
 
 from app.code_analysis.agents.states.code_chuck_analysis import CodeChunkAnalysisState
@@ -16,10 +18,26 @@ def analyse_code_chunk(state: CodeChunkAnalysisState) -> CodeChunkAnalysisState:
 
     logger.info("Analyzing code chunk %s", state.code_chunk.chunk_id)
 
-    # Initialize the Claude model using Bedrock
+    # Create a boto3 client with extended timeout configuration
+    region = os.environ.get("AWS_REGION")
+    model_id = os.environ.get("AWS_BEDROCK_MODEL")
+
+    # Configure boto3 with extended timeouts
+    boto_config = Config(
+        connect_timeout=60,  # Connection timeout in seconds
+        read_timeout=300,  # Read timeout in seconds (5 minutes)
+        retries={"max_attempts": 3},
+    )
+
+    # Create the boto3 bedrock-runtime client with the extended timeout configuration
+    bedrock_client = boto3.client(
+        "bedrock-runtime", region_name=region, config=boto_config
+    )
+
+    # Initialize the Claude model using Bedrock with custom client
     model = ChatBedrock(
-        model_id=os.environ.get("AWS_BEDROCK_MODEL"),
-        region_name=os.environ.get("AWS_REGION"),
+        model_id=model_id,
+        client=bedrock_client,
         model_kwargs={"temperature": 0, "max_tokens": 8192},
     )
 
@@ -41,43 +59,63 @@ Your analysis must return ONLY a valid JSON object with these fields:
 1. summary (required): Concise functional description of what this code does from a business perspective (3-5 sentences).
 
 2. data_model (string): If applicable, include:
+   - Logical data models and entities
    - Mermaid ERD diagram as a string (wrapped in triple backticks with "mermaid" tag)
    - Detailed breakdown of each model's fields, types, and relationships
+   - Data flow and transformations
+   - Data validation and integrity checks
    - Set to null if no data models are present
 
-1. interfaces (string): If applicable, document:
-   - Method signatures with parameters and return types
+3. interfaces (string): If applicable, include:
+   - User interfaces (UI)
    - API endpoints with request/response formats
-   - Interface contracts and requirements
+   - Batch processing interfaces
+   - Event-driven interfaces (e.g., message queues)
+   - Any other interfaces exposed by the code
    - Set to null if no interfaces are defined
 
-1. business_logic (string): If applicable, analyze:
-   - Algorithms and processing workflows
-   - Business rules, validations, and conditional logic
+4. business_logic (string): If applicable, include:
+   - Core business rules and domain logic
+   - Business process flows
+   - Business rules
+   - Separation of concerns between business logic and other layers
+   - Domain-driven design patterns
    - Set to null if no significant business logic exists
 
-1. dependencies (string): Always analyze:
-   - Internal dependencies (imports from other project files)
-   - External dependencies (third-party libraries)
+5. dependencies (string): If applicable, include:
+   - External dependencies (libraries, frameworks)
    - API calls or external services
-   - Set to null only if truly no dependencies exist
+   - Database connections and ORM usage
+   - Third-party integrations
+   - Any other external dependencies
+   - Versioning and compatibility considerations
+   - Set to null if no dependencies exist
 
-1. configuration (string): If applicable, document:
+6. configuration (string): If applicable, include:
+   - Configuration files (e.g., YAML, JSON)
    - Configuration variables with defaults and valid options
    - Environment variables and config files
-   - Loading mechanisms
+   - Secrets management and sensitive data handling
    - Set to null if no configuration exists
 
-1. infrastructure (string): If applicable, analyze:
-   - Deployment requirements and environment needs
-   - Resource requirements and scaling considerations
+7. infrastructure (string): If applicable, include:
+   - Deployment configuration and infrastructure as code (IaC)
+   - Deployment and environment setup
+   - Cloud services integration
+   - Containerization and orchestration
+   - CI/CD pipeline setup
    - Set to null if no infrastructure elements exist
 
-1. non_functional (string): If applicable, document:
-   - Performance, security, reliability aspects
-   - Error handling, logging, monitoring
-   - Maintainability and compliance considerations
-   - Set to null if no significant non-functional elements exist
+8. non_functional (string): If applicable, include:
+   - Performance and reliability aspects
+   - Security considerations and potential vulnerabilities
+   - Volume and load considerations
+   - Significant error handling and recovery mechanisms
+   - Logging, monitoring, and alerting
+   - Compliance considerations
+   - Data and privacy considerations
+   - Testing strategies and code coverage
+   - Set to null if no non-functional elements exist
 
 Include the chunk_id in your response JSON object. Your response must be a valid JSON object following EXACTLY this structure:
 

@@ -33,41 +33,37 @@ async def generate_interfaces_report(state: CodeAnalysisState) -> CodeAnalysisSt
         report = "No interfaces information found in the analyzed code chunks."
     else:
         # Define system prompt for interfaces analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the interfaces in the codebase.
-
-Focus on:
-- API design and patterns
-- Interface definitions (classes, protocols, contracts)
-- Component boundaries and communication
-- Public vs. private interfaces
-- RESTful, GraphQL, or other API styles
-- Consistency and adherence to design principles
-- Interface documentation and usability
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the interfaces exposed by a codebase. Format your report in markdown format with clear sections"""
 
         # Define user prompt with interfaces context
-        user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the interfaces in the codebase.
+        user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the interfaces exposed by the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
-
-Context:
+Code chunks:
 {interfaces_context}
+</context>
 
-Provide a complete, standalone report section focusing only on interfaces, APIs, and component boundaries."""
+Your report should be titled "Interfaces Report" and should include the following sections:
+- User interfaces (UI)
+- API endpoints with request/response formats
+- Batch processing interfaces
+- Event-driven interfaces (e.g., message queues)
+- Any other interfaces exposed by the code
 
-        report = generate_report(system_prompt, user_prompt)
+Ensure to only include external interfaces and exclude any internal interface details.
 
-    # Create the formatted report section
-    formatted_report = f"# Interfaces Report\n\n{report}"
+Ensure there are no duplicates or redundancy in the single report.
+"""
+
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Interfaces report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"interfaces": formatted_report}
+        update={"interfaces": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})

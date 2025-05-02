@@ -33,41 +33,35 @@ async def generate_infrastructure_report(state: CodeAnalysisState) -> CodeAnalys
         report = "No infrastructure information found in the analyzed code chunks."
     else:
         # Define system prompt for infrastructure analysis
-        system_prompt = """You are a senior software developer analyzing a code repository.
-Your task is to create a detailed, insightful report on the infrastructure aspects of the codebase.
+        system_prompt = """You are a senior software developer analyzing a code repository. Your task is to create a detailed report on the infrastructure aspects of the codebase. Format your report in markdown format with clear sections"""
 
-Focus on:
-- Deployment configuration and infrastructure as code
-- Cloud services integration
-- Containerization and orchestration
-- CI/CD pipeline setup
-- Scalability and high availability provisions
-- Infrastructure monitoring and observability
-- Resource management and provisioning
-
-Format your report with clear sections, bullet points, and examples where helpful.
-Be specific, factual, and professional."""
-
-        # Define user prompt with infrastructure context
+        # Define user prompt with data model context
         user_prompt = f"""Based on the following code analysis information, create a comprehensive report on the infrastructure aspects of the codebase.
+The <context> block contains code from multiple code chunks, and you should generate a single report as defined below.
 
+<context>
 Repository URL: {state.repo_url}
 Languages used: {", ".join(state.languages_used)}
 
-Context:
+Code chunks:
 {infrastructure_context}
+</context>
 
-Provide a complete, standalone report section focusing only on infrastructure, deployment, and DevOps aspects."""
+Your report should be titled "Infrastructure Report" and should include the following sections:
+- Deployment configuration and infrastructure as code (IaC)
+- Deployment and environment setup
+- Cloud services integration
+- Containerization and orchestration
+- CI/CD pipeline setup
 
-        report = generate_report(system_prompt, user_prompt)
+Ensure there are no duplicates or redundancy in the single report."""
 
-    # Create the formatted report section
-    formatted_report = f"# Infrastructure Report\n\n{report}"
+    report = generate_report(system_prompt, user_prompt)
 
     logger.info("Infrastructure report generated")
 
     # Update the state with the new report section
     updated_report_sections = state.report_sections.model_copy(
-        update={"infrastructure": formatted_report}
+        update={"infrastructure": report}
     )
     return state.model_copy(update={"report_sections": updated_report_sections})
