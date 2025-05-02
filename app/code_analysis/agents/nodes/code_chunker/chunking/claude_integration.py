@@ -8,6 +8,7 @@ import time
 from typing import Any, Callable
 
 import boto3
+import tiktoken
 from botocore.config import Config
 from langchain_aws import ChatBedrock
 
@@ -109,7 +110,13 @@ def get_chunks_from_bedrock(
     logger.info("Sending request to AWS Bedrock for chunking analysis...")
 
     # Get model ID and region from config or environment variables
-    model_id = config.aws_bedrock_model or os.environ.get("AWS_BEDROCK_MODEL")
+    # model_id = config.aws_bedrock_model or os.environ.get("AWS_BEDROCK_MODEL")
+    model_id = "arn:aws:bedrock:eu-central-1:314146300665:inference-profile/eu.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    region_name = "eu-central-1"
+    provider = "anthropic"
+    logger.info("model_id: %s", model_id)
+    logger.info("region_name: %s", region_name)
+    logger.info("provider: %s", provider)
     region = config.aws_region or os.environ.get("AWS_REGION")
 
     # Validate that required configuration is available
@@ -143,8 +150,10 @@ def get_chunks_from_bedrock(
             # Initialize the ChatBedrock model with custom client
             model = ChatBedrock(
                 model_id=model_id,
+                region_name=region_name,
+                provider=provider,
                 client=bedrock_client,
-                model_kwargs={"temperature": 0, "max_tokens": 8192},
+                model_kwargs={"temperature": 0, "max_tokens": 64000},
             )
 
             # Prepare messages
@@ -155,6 +164,15 @@ def get_chunks_from_bedrock(
 
             # Call the model
             result = model.invoke(messages)
+
+            # Count tokens in the input prompt
+            encoding = tiktoken.encoding_for_model("gpt-4")  # Use a compatible encoder
+            input_tokens = encoding.encode(prompt)
+            logger.info("Input prompt token count: %d", len(input_tokens))
+
+            # Count tokens in the response
+            response_tokens = encoding.encode(result.content)
+            logger.info("Response token count: %d", len(response_tokens))
 
             # Return the content of the response
             return result.content

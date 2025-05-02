@@ -26,7 +26,13 @@ def generate_report(system_prompt: str, user_prompt: str) -> str:
     logger.info("Generating report using custom prompts")
 
     # Get environment variables
-    model_id = os.environ.get("AWS_BEDROCK_MODEL")
+    # model_id = os.environ.get("AWS_BEDROCK_MODEL")
+    model_id = "arn:aws:bedrock:eu-central-1:314146300665:inference-profile/eu.anthropic.claude-3-7-sonnet-20250219-v1:0"
+    region_name = "eu-central-1"
+    provider = "anthropic"
+    logger.info("model_id: %s", model_id)
+    logger.info("region_name: %s", region_name)
+    logger.info("provider: %s", provider)
     region = os.environ.get("AWS_REGION")
 
     # Configure boto3 with extended timeouts
@@ -44,8 +50,10 @@ def generate_report(system_prompt: str, user_prompt: str) -> str:
     # Initialize the Claude model using Bedrock with custom client
     model = ChatBedrock(
         model_id=model_id,
+        region_name=region_name,
+        provider=provider,
         client=bedrock_client,
-        model_kwargs={"temperature": 0, "max_tokens": 8192},
+        model_kwargs={"temperature": 0, "max_tokens": 64000},
     )
 
     # Generate the report section
