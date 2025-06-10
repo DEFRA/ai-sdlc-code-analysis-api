@@ -3,6 +3,7 @@ Service for code analysis functionality.
 """
 
 import asyncio
+import os
 from logging import getLogger
 
 from bson import ObjectId
@@ -40,6 +41,48 @@ async def trigger_code_analysis(repo_url: str) -> str:
 
     # Create task with explicit name for better debugging
     task = asyncio.create_task(run_analysis(), name=f"code_analysis_{thread_id}")
+
+    # Add task to event loop without waiting for it
+    asyncio.ensure_future(task)
+
+    return thread_id
+
+
+async def trigger_local_code_analysis() -> str:
+    """
+    Triggers a new code analysis for the local repository-ingest folder.
+
+    Returns:
+        The thread ID for the analysis
+    """
+    # Generate a unique thread ID
+    thread_id = str(ObjectId())
+
+    # Use the absolute path to the repository-ingest folder
+    repo_path = os.path.abspath("repository-ingest")
+
+    logger.info(
+        "Triggering local code analysis for path %s with thread ID %s",
+        repo_path,
+        thread_id,
+    )
+
+    # Verify the repository-ingest folder exists
+    if not os.path.exists(repo_path):
+        logger.error("Repository-ingest folder does not exist at: %s", repo_path)
+        error_msg = f"Repository-ingest folder not found: {repo_path}"
+        raise ValueError(error_msg)
+
+    # Start the agent asynchronously with proper error handling
+    async def run_analysis():
+        try:
+            await create_code_analysis_agent(thread_id, repo_path)
+            logger.info("Local code analysis completed for thread %s", thread_id)
+        except Exception as e:
+            logger.error("Error in local code analysis background task: %s", e)
+
+    # Create task with explicit name for better debugging
+    task = asyncio.create_task(run_analysis(), name=f"local_code_analysis_{thread_id}")
 
     # Add task to event loop without waiting for it
     asyncio.ensure_future(task)

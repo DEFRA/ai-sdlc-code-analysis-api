@@ -41,6 +41,15 @@ class CodeAnalysisRequest(BaseModel):
     repo_url: HttpUrl = Field(..., description="The URL of the repository to analyze")
 
 
+class LocalCodeAnalysisRequest(BaseModel):
+    """Request model for triggering local code analysis."""
+
+    description: str = Field(
+        default="Local repository analysis",
+        description="Optional description for the local analysis",
+    )
+
+
 class CodeAnalysisResponse(BaseModel):
     """Response model for code analysis trigger."""
 

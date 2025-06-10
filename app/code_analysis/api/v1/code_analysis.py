@@ -11,10 +11,12 @@ from app.code_analysis.models.code_analysis import (
     CodeAnalysis,
     CodeAnalysisRequest,
     CodeAnalysisResponse,
+    LocalCodeAnalysisRequest,
 )
 from app.code_analysis.services.code_analysis import (
     get_code_analysis_state,
     trigger_code_analysis,
+    trigger_local_code_analysis,
 )
 
 router = APIRouter(prefix="/api/v1/code-analysis")
@@ -37,6 +39,36 @@ async def create_code_analysis(request: CodeAnalysisRequest) -> CodeAnalysisResp
     except Exception as e:
         logger.error("Error triggering code analysis: %s", e)
         detail = f"Failed to trigger code analysis: {str(e)}"
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=detail,
+        ) from e
+
+
+@router.post(
+    "/local", response_model=CodeAnalysisResponse, status_code=status.HTTP_202_ACCEPTED
+)
+async def create_local_code_analysis(
+    request: LocalCodeAnalysisRequest,
+) -> CodeAnalysisResponse:
+    """
+    Triggers a new code analysis for the local repository-ingest folder.
+    Returns a thread ID that can be used to check the status.
+    """
+    logger.info("Received local code analysis request: %s", request.description)
+
+    try:
+        thread_id = await trigger_local_code_analysis()
+        return CodeAnalysisResponse(thread_id=thread_id)
+    except ValueError as e:
+        logger.error("Repository-ingest folder not found: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        ) from e
+    except Exception as e:
+        logger.error("Error triggering local code analysis: %s", e)
+        detail = f"Failed to trigger local code analysis: {str(e)}"
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=detail,
